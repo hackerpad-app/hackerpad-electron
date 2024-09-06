@@ -1,35 +1,26 @@
-import Versions from './components/Versions'
-import electronLogo from './assets/electron.svg'
+import Daybook from './components/Daybook'
+import Issues from './components/Issues'
 
-function App(): JSX.Element {
-  const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
+import { TimerProvider } from './components/context/TimeContext'
 
-  return (
-    <>
-      <img alt="logo" className="logo" src={electronLogo} />
-      <div className="creator">Powered by electron-vite</div>
-      <div className="text">
-        Build an Electron app with <span className="react">React</span>
-        &nbsp;and <span className="ts">TypeScript</span>
-      </div>
-      <p className="tip">
-        Please try pressing <code>F12</code> to open the devTool
-      </p>
-      <div className="actions">
-        <div className="action">
-          <a href="https://electron-vite.org/" target="_blank" rel="noreferrer">
-            Documentation
-          </a>
-        </div>
-        <div className="action">
-          <a target="_blank" rel="noreferrer" onClick={ipcHandle}>
-            Send IPC
-          </a>
-        </div>
-      </div>
-      <Versions></Versions>
-    </>
-  )
+import { useState } from 'react'
+
+export default function App(): JSX.Element | null {
+  const [pad, setPad] = useState<string | null>('daybook')
+
+  if (pad == 'daybook') {
+    return (
+      <TimerProvider>
+        <Daybook pad={pad} setPad={setPad} />
+      </TimerProvider>
+    )
+  }
+  if (pad == 'issues') {
+    return (
+      <TimerProvider>
+        <Issues pad={pad} setPad={setPad} />
+      </TimerProvider>
+    )
+  }
+  return null
 }
-
-export default App

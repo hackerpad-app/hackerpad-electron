@@ -1,0 +1,142 @@
+@import 'remixicon/fonts/remixicon.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+
+  color: #0f0f0f;
+  background-color: #5c3d3d;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #f6f6f6;
+    background-color: #4b2424; /* Changed from #0c0e09 to a lighter shade */
+  }
+
+  a:hover {
+    color: #24c8db;
+  }
+
+  input,
+  button {
+    color: #ffffff;
+    background-color: #0f0f0f98;
+  }
+  button:active {
+    background-color: #0f0f0f69;
+  }
+}
+
+/*  scrollbar styles *
+/*Control color of TipTap's Editors; otherise it's midnight blue for some reason*/
+
+.prose {
+  padding-top: 1rem;
+  padding-left: 1rem;
+  width: 100%;
+}
+
+.prose h1 {
+  color: #ffffff;
+  font-size: 32px;
+}
+
+.prose h2 {
+  color: #ffffff;
+  font-size: 24px;
+}
+
+.prose h3 {
+  color: #ffffff;
+  font-size: 18px;
+}
+
+.prose h4 {
+  color: #ffffff;
+  font-size: 12px;
+}
+
+.prose p {
+  color: #ffffff;
+  line-height: 1.5;
+}
+
+.prose:focus,
+.prose:focus-within {
+  outline: none;
+  border: none;
+}
+
+/*Tasks CSS */
+
+ul[data-type='taskList'] ul {
+  padding-left: 0px; /* How much to move with each nested list*/
+}
+
+ul[data-type='taskList'] {
+  list-style-type: none; /* Remove dots before todos */
+  padding-left: 0px; /* Remove default padding to align nested lists properly */
+}
+
+ul[data-type='taskList'] > li > input,
+ul[data-type='taskList'] > li > div,
+ul[data-type='taskList'] li input,
+ul[data-type='taskList'] li div {
+  display: inline-grid; /*Inline grid works but need to add padding   padding: 5px;  */
+  justify-content: end;
+  grid-template-rows: 15px 1fr; /* 10px regulates space between two task items*/
+  margin-left: 5px; /*Space between box and text*/
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000; /* Ensure modal is above other content */
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.554);
+  z-index: 10;
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(22, 163, 74, 0.5) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(22, 163, 74, 0.5);
+  border-radius: 3px;
+  border: transparent;
+}
