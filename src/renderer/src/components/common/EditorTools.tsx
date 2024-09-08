@@ -70,7 +70,7 @@ const Tools = ({ pad }: ToolsProps) => {
             type="text"
             placeholder="Search..."
             onChange={handleSearchChange}
-            className="bg-transparent border-b border-bright-green text-bright-green px-2 py-1 mr-2 focus:outline-none"
+            className="bg-transparent rounded-md text-gray-300 px-3 py-1 mr-2 ring-gray-300 ring-1 focus:outline-none w-64"
           />
         </div>
       </div>
