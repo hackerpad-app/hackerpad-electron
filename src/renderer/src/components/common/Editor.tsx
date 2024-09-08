@@ -124,7 +124,7 @@ export default function Editor({ pad }: EditorProps) {
         </div>
         <div className="mr-5">
           {displayedNote?.updated_at
-            ? `Updated at ${new Date(displayedNote.updated_at).toLocaleDateString('en-US', {
+            ? `${new Date(displayedNote.updated_at).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
