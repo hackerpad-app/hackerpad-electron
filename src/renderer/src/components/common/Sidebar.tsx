@@ -4,25 +4,20 @@ import { PiCalendarCheckThin } from 'react-icons/pi'
 import { PiPencilCircleThin } from 'react-icons/pi'
 
 import { useTimer } from '../context/TimeContext'
-
+import { useNotesContext } from '../context/NotesContext'
 import Note from '../../types/Note'
 import SessionTimer from './SessionTimer'
 
 interface SidebarProps {
   pad: string
   setPad: React.Dispatch<React.SetStateAction<string | null>>
-  searchResults: Note[]
-  allNotes: Note[]
-  setDisplayedNote: React.Dispatch<React.SetStateAction<Note | null>>
-  displayedNote: Note | null
-  updateNote: (pad: string, headline: string, content: string) => Promise<void>
 }
 
 interface NoteListProps {
   pad: string
   searchResults: Note[]
   allNotes: Note[]
-  updateNote: (pad: string, headline: string, content: string) => Promise<void>
+  updateNote: (pad: string, id: string, headline: string, content: string) => void
   displayedNote: Note | null
   setDisplayedNote: React.Dispatch<React.SetStateAction<Note | null>>
 }
@@ -31,7 +26,7 @@ interface NoteItemProps {
   pad: string
   note: Note
   isSelected: boolean
-  updateNote: (pad: string, headline: string, content: string) => Promise<void>
+  updateNote: (pad: string, id: string, headline: string, content: string) => void
   displayedNote: Note | null
   setDisplayedNote: React.Dispatch<React.SetStateAction<Note | null>>
   handleSelectNote: (note: Note) => void
@@ -54,7 +49,7 @@ const NoteItem = ({
 }: NoteItemProps): JSX.Element => {
   const handleClick = async (): Promise<void> => {
     if (displayedNote && displayedNote.id !== note.id) {
-      await updateNote(pad, displayedNote.headline, displayedNote.content)
+      await updateNote(pad, displayedNote.id, displayedNote.headline, displayedNote.content)
     }
     handleSelectNote(note)
     setDisplayedNote(note)
@@ -91,10 +86,7 @@ function NoteList({
   updateNote,
   displayedNote
 }: NoteListProps): JSX.Element {
-  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null)
-
   const handleSelectNote = (note: Note): void => {
-    setSelectedNoteId(note.id)
     setDisplayedNote(note)
   }
 
@@ -127,7 +119,7 @@ function NoteList({
             pad={pad}
             key={note.id}
             note={note}
-            isSelected={note.id === selectedNoteId}
+            isSelected={note.id === displayedNote?.id}
             updateNote={updateNote}
             displayedNote={displayedNote}
             setDisplayedNote={setDisplayedNote}
@@ -146,10 +138,18 @@ const PadsPanel = ({
   onMouseEnter,
   onMouseLeave
 }: PadsPanelProps & { onMouseEnter: () => void; onMouseLeave: () => void }): JSX.Element => {
+  const { setSidebarSearchQuery, setSidebarSearchResults } = useNotesContext()
+
   const getActiveStyle = (currentPad: string): React.CSSProperties => ({
-    color: pad === currentPad ? '#00FF00' : 'inherit', // Use bright green for active, inherit for others
+    color: pad === currentPad ? '#00FF00' : 'inherit',
     fontSize: '30px'
   })
+
+  const handlePadChange = (newPad: string) => {
+    setPad(newPad)
+    setSidebarSearchResults([])
+    setSidebarSearchQuery('')
+  }
 
   return (
     <div
@@ -174,26 +174,41 @@ const PadsPanel = ({
           gap: '10px'
         }}
       >
-        <div onClick={() => setPad('daybook')} className="py-4" style={getActiveStyle('daybook')}>
+        <div
+          onClick={() => handlePadChange('daybook')}
+          className="py-4"
+          style={getActiveStyle('daybook')}
+        >
           <PiCalendarCheckThin />
         </div>
-        <div onClick={() => setPad('issues')} className="py-4" style={getActiveStyle('issues')}>
+        <div
+          onClick={() => handlePadChange('notes')}
+          className="py-4"
+          style={getActiveStyle('notes')}
+        >
           <PiPencilCircleThin />
-        </div>{' '}
+        </div>
       </div>
     </div>
   )
 }
 
-export default function Sidebar({
-  pad,
-  setPad,
-  searchResults,
-  allNotes,
-  updateNote,
-  displayedNote,
-  setDisplayedNote
-}: SidebarProps): JSX.Element {
+export default function Sidebar({ pad, setPad }: SidebarProps): JSX.Element {
+  const {
+    updateNote,
+    allNotesDaybook,
+    allNotesNotes,
+    displayedNoteDaybook,
+    displayedNoteNotes,
+    setDisplayedNoteDaybook,
+    setDisplayedNoteNotes,
+    sidebarSearchResults
+  } = useNotesContext()
+
+  const allNotes = pad === 'daybook' ? allNotesDaybook : allNotesNotes
+  const displayedNote = pad === 'daybook' ? displayedNoteDaybook : displayedNoteNotes
+  const setDisplayedNote = pad === 'daybook' ? setDisplayedNoteDaybook : setDisplayedNoteNotes
+
   const [showPadsPanel, setPadsPanel] = useState(false)
   const [isMouseOverPanel, setIsMouseOverPanel] = useState(false)
 
@@ -291,7 +306,7 @@ export default function Sidebar({
       <div className="h-screen flex flex-col bg-dark-green p-5 mt-10">
         <NoteList
           pad={pad}
-          searchResults={searchResults}
+          searchResults={sidebarSearchResults}
           allNotes={allNotes}
           updateNote={updateNote}
           displayedNote={displayedNote}

@@ -1,51 +1,25 @@
 import { useState, useEffect } from 'react'
-import { invoke } from '@tauri-apps/api/tauri'
-
 import Note from './../types/Note'
 
 export default function useNotes(pad: string) {
   const [allNotesDaybook, setAllNotesDaybook] = useState<Note[]>([])
-  const [allNotesIssues, setAllNotesIssues] = useState<Note[]>([])
+  const [allNotesNotes, setAllNotesNotes] = useState<Note[]>([])
 
-  const [displayedNoteIssues, setDisplayedNoteIssues] = useState<Note | null>(null)
+  const [displayedNoteNotes, setDisplayedNoteNotes] = useState<Note | null>(null)
   const [displayedNoteDaybook, setDisplayedNoteDaybook] = useState<Note | null>(null)
 
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<Note[]>([])
+  const [sidebarSearchQuery, setSidebarSearchQuery] = useState('')
+  const [sidebarSearchResults, setSidebarSearchResults] = useState<Note[]>([])
+  const [editorSearchQuery, setEditorSearchQuery] = useState('')
+  const [editorSearchResults, setEditorSearchResults] = useState<Note[]>([])
 
   useEffect(() => {
-    invoke('initialize_db_notes')
-      .then((message) => console.log(message))
-      .catch((error) => console.error(error))
-    fetchNotes('daybook')
-    fetchNotes('issues')
+    readNotes('daybook')
+    readNotes('notes')
   }, [])
 
-  useEffect(() => {
-    if (searchQuery.length > 0) {
-      searchNotes(searchQuery, pad)
-    } else {
-      setSearchResults([])
-    }
-  }, [searchQuery, pad])
-
-  const searchNotes = async (query: string, pad: string) => {
-    try {
-      console.log('Searching notes with query: ', searchQuery, ' in pad: ', pad)
-
-      const searchedNotes = await invoke('search_notes', {
-        search: query,
-        pad: pad
-      })
-      const NotesArray = searchedNotes as Note[]
-      setSearchResults(NotesArray)
-    } catch (error) {
-      console.error('Failed to search notes:', error)
-    }
-  }
-
-  const setDefaultNote = (pad: string) => ({
-    id: 'temp-id',
+  const setDefaultNote = (pad: string): Note => ({
+    id: `temp-${Date.now()}`,
     headline: '👋 🌎 ',
     content: '',
     created_at: new Date().toISOString(),
@@ -53,9 +27,103 @@ export default function useNotes(pad: string) {
     pad
   })
 
+  const daybookTemplate = {
+    id: `temp-${Date.now()}`,
+    headline: `${new Date().toLocaleDateString()}`,
+    content: "<h2>🧠 Keep in mind</h2><p><h2>✅ Today's tasks</h2><p><h2>🐥 Standup</h2><p>",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    pad: 'daybook'
+  }
+
+  const notesTemplate = {
+    id: `temp-${Date.now()}`,
+    content: '<h2>🧠 Thoughts</h2><p>',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    pad: 'notes'
+  }
+
+  const searchNotes = (query: string, pad: string) => {
+    console.log('pad', pad)
+    const allNotes = pad === 'daybook' ? allNotesDaybook : allNotesNotes
+    return allNotes.filter(
+      (note) =>
+        note.headline.toLowerCase().includes(query.toLowerCase()) ||
+        note.content.toLowerCase().includes(query.toLowerCase())
+    )
+  }
+
+  const searchSidebarNotes = (query: string) => {
+    console.log('searching sidebar notes', query)
+    const results = searchNotes(query, pad)
+    setSidebarSearchResults(results)
+    console.log('sidebarSearchResults usenotes', sidebarSearchResults)
+    if (sidebarSearchResults.length > 0) {
+      if (pad === 'daybook') {
+        setDisplayedNoteDaybook(sidebarSearchResults[0])
+      } else {
+        setDisplayedNoteNotes(sidebarSearchResults[0])
+      }
+    }
+  }
+
+  const searchEditorNotes = (query: string) => {
+    console.log('searching editor notes', query)
+    const results = searchNotes(query, 'notes') // Always search in 'notes' for editor
+    setEditorSearchResults(results)
+    console.log('editorSearchResults usenotes', editorSearchResults)
+  }
+
+  const createNote = (pad: string, headline: string = '') => {
+    const newNote: Note =
+      pad === 'daybook'
+        ? { ...daybookTemplate, id: `note_${Date.now()}` }
+        : { ...notesTemplate, headline, id: `note_${Date.now()}` }
+
+    const storedNotes = localStorage.getItem(`notes_${pad}`)
+    const NotesArray = storedNotes ? JSON.parse(storedNotes) : []
+    NotesArray.unshift(newNote) // Add new note to the top of the array
+    localStorage.setItem(`notes_${pad}`, JSON.stringify(NotesArray))
+    readNotes(pad)
+  }
+
+  const readNotes = (pad: string) => {
+    const storedNotes = localStorage.getItem(`notes_${pad}`)
+    const NotesArray = storedNotes ? JSON.parse(storedNotes) : []
+    handleNotesArray(pad, NotesArray)
+  }
+
+  const updateNote = (pad: string, id: string, headline: string, content: string) => {
+    const storedNotes = localStorage.getItem(`notes_${pad}`)
+    let NotesArray = storedNotes ? JSON.parse(storedNotes) : []
+    const updatedNotes = NotesArray.map((note: Note) =>
+      note.id === id ? { ...note, headline, content, updated_at: new Date().toISOString() } : note
+    )
+    localStorage.setItem(`notes_${pad}`, JSON.stringify(updatedNotes))
+
+    if (pad === 'notes') {
+      setAllNotesNotes(updatedNotes)
+    } else {
+      setAllNotesDaybook(updatedNotes)
+    }
+  }
+
+  const deleteNote = (pad: string) => {
+    console.log('Deleting a note')
+    const displayed = pad === 'daybook' ? displayedNoteDaybook : displayedNoteNotes
+    if (displayed === null) return
+
+    const storedNotes = localStorage.getItem(`notes_${pad}`)
+    let NotesArray = storedNotes ? JSON.parse(storedNotes) : []
+    NotesArray = NotesArray.filter((note: Note) => note.id !== displayed.id)
+    localStorage.setItem(`notes_${pad}`, JSON.stringify(NotesArray))
+    readNotes(pad)
+  }
+
   const handleNotesArray = (pad: string, NotesArray: Note[]) => {
-    const setNote = pad === 'daybook' ? setDisplayedNoteDaybook : setDisplayedNoteIssues
-    const setAllNotes = pad === 'daybook' ? setAllNotesDaybook : setAllNotesIssues
+    const setNote = pad === 'daybook' ? setDisplayedNoteDaybook : setDisplayedNoteNotes
+    const setAllNotes = pad === 'daybook' ? setAllNotesDaybook : setAllNotesNotes
 
     if (NotesArray.length > 0) {
       setNote(NotesArray[0])
@@ -65,73 +133,25 @@ export default function useNotes(pad: string) {
     setAllNotes(NotesArray)
   }
 
-  const fetchNotes = async (pad: string) => {
-    try {
-      const fetchedNotes = await invoke('get_notes', { pad })
-      const NotesArray = fetchedNotes as Note[]
-      handleNotesArray(pad, NotesArray)
-    } catch (error) {
-      console.error(`Failed to fetch notes for ${pad}:`, error)
-    }
-  }
-
-  const createNote = async (pad: string, headline: string = '') => {
-    try {
-      await invoke('create_note', { pad: pad, headline: headline })
-      await fetchNotes(pad)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  const removeNote = async (pad: string) => {
-    try {
-      let displayed = null // Declare `displayed` outside the if-else blocks
-
-      if (pad == 'daybook') {
-        displayed = displayedNoteDaybook
-      } else if (pad == 'issues') {
-        displayed = displayedNoteIssues
-      }
-
-      if (displayed === null) return
-
-      const message = await invoke('remove_note', { id: displayed.id })
-      console.log(message)
-      await fetchNotes(pad) // Refresh Notes after removing a note
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  const updateNote = async (pad: string, headline: string, content: string) => {
-    try {
-      const displayedNote = pad === 'issues' ? displayedNoteIssues : displayedNoteDaybook
-
-      if (displayedNote === null) return
-
-      await invoke('update_note', {
-        id: displayedNote.id,
-        headline,
-        content
-      })
-      await fetchNotes(pad)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
   return {
     createNote,
-    removeNote,
+    deleteNote,
     updateNote,
-    setSearchQuery,
-    searchResults,
+    searchNotes,
     allNotesDaybook,
-    allNotesIssues,
+    allNotesNotes,
     displayedNoteDaybook,
-    displayedNoteIssues,
+    displayedNoteNotes,
     setDisplayedNoteDaybook,
-    setDisplayedNoteIssues
+    setDisplayedNoteNotes,
+    sidebarSearchQuery,
+    setSidebarSearchQuery,
+    setSidebarSearchResults,
+    sidebarSearchResults,
+    searchSidebarNotes,
+    editorSearchQuery,
+    setEditorSearchQuery,
+    editorSearchResults,
+    searchEditorNotes
   }
 }

@@ -1,18 +1,18 @@
 import Sidebar from './common/Sidebar'
 import Editor from './common/Editor'
 
-interface DaybookProps {
+interface NotesProps {
   pad: string
   setPad: React.Dispatch<React.SetStateAction<string | null>>
 }
 
-export default function Daybook({ pad, setPad }: DaybookProps) {
+export default function Notes({ pad, setPad }: NotesProps) {
   return (
-    <div className="flex h-screen ">
-      <div className="flex w-1/5 overflow-hidden h-full">
+    <div className="flex flex-row">
+      <div className="flex w-1/5 h-full overflow-hidden">
         <Sidebar pad={pad} setPad={setPad} />
       </div>
-      <div className="flex w-4/5 overflow-y-auto bg-dark-green h-full">
+      <div className="w-4/5 h-full overflow-y-auto bg-dark-green">
         <Editor pad={pad} />
       </div>
     </div>

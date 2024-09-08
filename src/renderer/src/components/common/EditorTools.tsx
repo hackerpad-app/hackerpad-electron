@@ -1,65 +1,36 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { PiNotePencilLight } from 'react-icons/pi'
 import { AiOutlineDelete } from 'react-icons/ai'
-import Note from '../../types/Note'
+import { useNotesContext } from './../context/NotesContext'
 
 interface ToolsProps {
   pad: string
-  createNote: (pad: string, headline?: string) => Promise<void>
-  removeNote: (pad: string) => Promise<void>
-  updateNote: (pad: string, headline: string, content: string) => Promise<void>
-  displayedNote: Note | null
-  setSearchQuery: React.Dispatch<React.SetStateAction<string>>
 }
 
-const Tools = ({
-  pad,
-  removeNote,
-  createNote,
-  updateNote,
-  displayedNote,
-  setSearchQuery
-}: ToolsProps): React.ReactNode => {
+const Tools = ({ pad }: ToolsProps) => {
+  const { createNote, deleteNote, searchSidebarNotes } = useNotesContext()
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [headlineInput, setHeadlineInput] = useState('')
 
-  useEffect((): (() => void) => {
-    const saveInterval = setInterval(() => {
-      if (displayedNote) {
-        updateNote(pad, displayedNote.headline, displayedNote.content)
-      }
-    }, 5000)
-
-    return () => clearInterval(saveInterval)
-  }, [pad, displayedNote, updateNote])
-
-  const handleCreateNote = async (): Promise<void> => {
-    if (pad === 'issues') {
+  const handleCreateNote = (): void => {
+    if (pad === 'notes') {
       setIsModalVisible(true)
     } else {
-      try {
-        await createNote(pad)
-        if (displayedNote) {
-          await updateNote(pad, displayedNote.headline, displayedNote.content)
-        }
-      } catch (error) {
-        console.error(error)
-      }
+      createNote(pad)
     }
   }
 
   const handleModalSubmit = async (): Promise<void> => {
     try {
       await createNote(pad, headlineInput)
-      setIsModalVisible(false) // Close the modal after submission
+      setIsModalVisible(false)
     } catch (error) {
       console.error(error)
     }
   }
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    console.log('search set with', event.target.value)
-    setSearchQuery(event.target.value)
+    searchSidebarNotes(event.target.value)
   }
 
   return (
@@ -88,18 +59,18 @@ const Tools = ({
               <PiNotePencilLight />
             </div>
           </button>
-          <button onClick={() => removeNote(pad)} className="bg-transparent">
+          <button onClick={() => deleteNote(pad)} className="bg-transparent">
             <div className="py-4 text-bright-green" style={{ fontSize: '2rem' }}>
               <AiOutlineDelete />
             </div>
           </button>
         </div>
-        <div className="py-4 w-1/4">
+        <div className="flex items-center">
           <input
             type="text"
-            placeholder="Search"
-            className="border rounded text- h-8 p-2 w-full bg-transparent"
+            placeholder="Search..."
             onChange={handleSearchChange}
+            className="bg-transparent border-b border-bright-green text-bright-green px-2 py-1 mr-2 focus:outline-none"
           />
         </div>
       </div>

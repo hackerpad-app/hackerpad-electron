@@ -1,136 +1,121 @@
-import React, { useState } from "react";
-import { BubbleMenu } from "@tiptap/react";
-import { invoke } from "@tauri-apps/api/tauri";
-import Note from "./../../types/Note";
-import { Editor } from "@tiptap/core";
-import { Transaction } from "prosemirror-state";
+import React, { useState } from 'react'
+import { BubbleMenu } from '@tiptap/react'
+import Note from './../../types/Note'
+import { Editor } from '@tiptap/core'
+import { Transaction } from 'prosemirror-state'
+import { useNotesContext } from './../context/NotesContext'
 
 interface HighlightMenuProps {
-  editor: any; // Replace 'any' with the correct type from your editor library
+  editor: Editor
 }
 
-const HighlightMenu: React.FC<HighlightMenuProps> = ({ editor }) => {
-  const [searchResults, setSearchResults] = useState<Note[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isEstimateOpen, setIsEstimateOpen] = useState(false);
+const HighlightMenu = ({ editor }: HighlightMenuProps) => {
+  const { searchEditorNotes, editorSearchResults, updateNote } = useNotesContext()
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
 
-  const performSearch = async (query: string) => {
-    const searchedNotes = await invoke("search_notes", {
-      search: query,
-      pad: "issues",
-      search_by_headline: true,
-    });
-    setSearchResults(searchedNotes as Note[]);
-  };
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const query = event.target.value;
-    setSearchQuery(query);
-    performSearch(query);
-  };
-
-  const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
-    setIsEstimateOpen(false);
-  };
+  const [isEstimateOpen, setIsEstimateOpen] = useState(false)
 
   const toggleEstimate = () => {
-    setIsEstimateOpen(!isEstimateOpen);
-    setIsSearchOpen(false);
-  };
+    setIsEstimateOpen(!isEstimateOpen)
+  }
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const query = event.target.value
+    setSearchTerm(query)
+    searchEditorNotes(query)
+  }
+
+  const toggleSearch = () => {
+    setIsSearching(!isSearching)
+  }
 
   const handleHeadlineClick = async (note: Note) => {
     if (!editor.state.selection.empty) {
-      const { from, to } = editor.state.selection;
-      const highlightedText = editor.state.doc.textBetween(from, to, "");
+      const { from, to } = editor.state.selection
+      const highlightedText = editor.state.doc.textBetween(from, to, '')
 
-      const currentDate = new Date();
-      const dateTimeString = currentDate.toLocaleString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
+      const currentDate = new Date()
+      const dateTimeString = currentDate.toLocaleString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      })
 
-      const issueTag = ` [${note.headline}]`;
-      const dateTimeTag = ` [${dateTimeString}]`;
+      const noteTag = ` [${note.headline}]`
+      const dateTimeTag = ` [${dateTimeString}]`
 
-      // Update current editor with highlighted text and issue tag
-      // Update current editor with highlighted text and issue tag
+      // Update current editor with highlighted text and note tag
       editor
         .chain()
         .focus()
-        .insertContentAt(to, issueTag)
-        .setTextSelection({ from, to: to + issueTag.length })
-        .run();
+        .insertContentAt(to, noteTag)
+        .setTextSelection({ from, to: to + noteTag.length })
+        .run()
 
-      editor.commands.setMark("highlight", { color: "#2d2d1f" });
+      editor.commands.setMark('highlight', { color: '#2d2d1f' })
 
-      let newContent = `${note.content.trimEnd()}<br>${highlightedText}${dateTimeTag}`;
+      let newContent = `${note.content.trimEnd()}<br>${highlightedText}${dateTimeTag}`
 
       try {
-        await invoke("update_note", {
-          id: note.id,
-          headline: note.headline,
-          content: newContent,
-        });
-        console.log("Issue updated successfully");
+        updateNote(note.pad, note.headline, newContent)
+        console.log('Note updated successfully')
       } catch (error) {
-        console.error("Error updating issue:", error);
+        console.error('Error updating note:', error)
       }
     } else {
-      console.log("No text is highlighted.");
+      console.log('No text is highlighted.')
     }
 
-    editor.commands.blur();
-    setIsSearchOpen(false);
-    setSearchQuery("");
-  };
+    editor.commands.blur()
+    setIsSearching(false)
+    setSearchTerm('')
+  }
 
   const addHighlightWithPrefix = (color: string) => {
-    let colorName;
+    let colorName
     switch (color) {
-      case "#2b8a3e":
-        colorName = "<5min";
-        break;
-      case "#1864ab":
-        colorName = "15-30m";
-        break;
-      case "#f59f00":
-        colorName = "1-2h";
-        break;
-      case "#f50000":
-        colorName = "2-4h";
-        break;
+      case '#2b8a3e':
+        colorName = '<5min'
+        break
+      case '#1864ab':
+        colorName = '15-30m'
+        break
+      case '#f59f00':
+        colorName = '1-2h'
+        break
+      case '#f50000':
+        colorName = '2-4h'
+        break
       default:
-        colorName = "";
+        colorName = ''
     }
 
     editor
       .chain()
       .focus()
-      .command(({ tr, state }: { tr: Transaction; state: Editor["state"] }) => {
-        const { from, to } = state.selection;
-        const text = state.doc.textBetween(from, to, "");
+      .command(({ tr, state }: { tr: Transaction; state: Editor['state'] }) => {
+        const { from, to } = state.selection
+        const text = state.doc.textBetween(from, to, '')
         if (text) {
-          const prefixText = `[${colorName}] `;
-          tr.insertText(prefixText, from);
+          const prefixText = `[${colorName}] `
+          tr.insertText(prefixText, from)
           tr.addMark(
             from,
             from + prefixText.length - 1, // Subtract 1 to exclude the space after the bracket
             editor.schema.marks.highlight.create({
-              color,
+              color
             })
-          );
+          )
         }
-        return true;
+        return true
       })
-      .run();
-    setIsEstimateOpen(false);
-  };
+      .run()
+    setIsSearching(false)
+  }
 
   return (
     <BubbleMenu
@@ -142,7 +127,7 @@ const HighlightMenu: React.FC<HighlightMenuProps> = ({ editor }) => {
           <button
             onClick={toggleEstimate}
             className={`text-gray-300 hover:text-white px-2 py-1 rounded transition duration-300 ease-in-out ${
-              isEstimateOpen ? "bg-gray-700" : "hover:bg-gray-700"
+              isEstimateOpen ? 'bg-gray-700' : 'hover:bg-gray-700'
             }`}
           >
             Estimate
@@ -150,16 +135,16 @@ const HighlightMenu: React.FC<HighlightMenuProps> = ({ editor }) => {
           <button
             onClick={toggleSearch}
             className={`text-gray-300 hover:text-white px-2 py-1 rounded transition duration-300 ease-in-out ${
-              isSearchOpen ? "bg-gray-700" : "hover:bg-gray-700"
+              isSearching ? 'bg-gray-700' : 'hover:bg-gray-700'
             }`}
           >
-            Notes Notes
+            Notes
           </button>
-          {isSearchOpen && (
+          {isSearching && (
             <input
               type="text"
               placeholder="Search..."
-              value={searchQuery}
+              value={searchTerm}
               onChange={handleSearchChange}
               className="px-2 py-0.5 text-sm rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-gray-500 placeholder-gray-400 w-24"
             />
@@ -168,35 +153,35 @@ const HighlightMenu: React.FC<HighlightMenuProps> = ({ editor }) => {
         {isEstimateOpen && (
           <div className="mt-2 space-y-1">
             <button
-              onClick={() => addHighlightWithPrefix("#2b8a3e")}
+              onClick={() => addHighlightWithPrefix('#2b8a3e')}
               className="px-2 py-1 w-full text-left rounded text-gray-300 hover:bg-green-700 hover:text-white transition duration-300 ease-in-out"
             >
-              <div>&lt;5min.</div>{" "}
+              <div>&lt;5min.</div>{' '}
             </button>
             <button
-              onClick={() => addHighlightWithPrefix("#1864ab")}
+              onClick={() => addHighlightWithPrefix('#1864ab')}
               className="px-2 py-1 w-full text-left rounded text-gray-300 hover:bg-blue-700 hover:text-white transition duration-300 ease-in-out"
             >
               15-30m.
             </button>
             <button
-              onClick={() => addHighlightWithPrefix("#f59f00")}
+              onClick={() => addHighlightWithPrefix('#f59f00')}
               className="px-2 py-1 w-full text-left rounded text-gray-300 hover:bg-yellow-600 hover:text-white transition duration-300 ease-in-out"
             >
               1-2h
             </button>
             <button
-              onClick={() => addHighlightWithPrefix("#f50000")}
+              onClick={() => addHighlightWithPrefix('#f50000')}
               className="px-2 py-1 w-full text-left rounded text-gray-300 hover:bg-red-700 hover:text-white transition duration-300 ease-in-out"
             >
               2-4h
             </button>
           </div>
         )}
-        {isSearchOpen && searchQuery && (
+        {isSearching && searchTerm && (
           <div className="mt-2">
             <ul className="space-y-1">
-              {searchResults.slice(0, 5).map((note) => (
+              {editorSearchResults.slice(0, 5).map((note) => (
                 <li key={note.id}>
                   <button
                     className="w-full text-left px-2 py-0.5 rounded-md transition duration-300 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white text-sm truncate"
@@ -211,7 +196,7 @@ const HighlightMenu: React.FC<HighlightMenuProps> = ({ editor }) => {
         )}
       </div>
     </BubbleMenu>
-  );
-};
+  )
+}
 
-export default HighlightMenu;
+export default HighlightMenu
