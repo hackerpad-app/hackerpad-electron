@@ -1,14 +1,13 @@
 import { useRef, useEffect, useState } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { useNotesContext } from './../context/NotesContext'
-
 import Highlight from '@tiptap/extension-highlight'
 import Typography from '@tiptap/extension-typography'
 import StarterKit from '@tiptap/starter-kit'
 import TaskList from '@tiptap/extension-task-list'
 import TaskItem from '@tiptap/extension-task-item'
 import Strike from '@tiptap/extension-strike'
-import Confetti from 'react-dom-confetti'
+import confetti from 'canvas-confetti'
 import Tools from './EditorTools'
 import HighlightMenu from './HighlightMenu'
 import BulletList from '@tiptap/extension-bullet-list'
@@ -29,8 +28,7 @@ export default function Editor({ pad }: EditorProps) {
   const displayedNote = pad === 'daybook' ? displayedNoteDaybook : displayedNoteNotes
   const setDisplayedNote = pad === 'daybook' ? setDisplayedNoteDaybook : setDisplayedNoteNotes
 
-  const [confetti, setConfetti] = useState(false)
-  const [checkedCount, setCheckedCount] = useState(0)
+  const [previousContent, setPreviousContent] = useState('')
 
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -87,22 +85,33 @@ export default function Editor({ pad }: EditorProps) {
         class: 'prose max-w-none h-1/2 w-full tiptap task-list-inline'
       }
     },
-    onUpdate: () => {
-      const newContent = editor?.getHTML()
+    onUpdate: ({ editor }) => {
+      const newContent = editor.getHTML()
       if (newContent !== undefined && displayedNote) {
         const newNote = { ...displayedNote, content: newContent }
         setDisplayedNote(newNote)
 
-        // Handle strike-through logic and confetti
+        // Check if a task was just completed
+        const prevCheckedCount = (previousContent.match(/data-checked="true"/g) || []).length
         const newCheckedCount = (newContent.match(/data-checked="true"/g) || []).length
-        if (newCheckedCount > checkedCount) {
-          setConfetti(true)
-          setTimeout(() => setConfetti(false), 2000)
+
+        if (newCheckedCount > prevCheckedCount) {
+          triggerConfetti()
         }
-        setCheckedCount(newCheckedCount)
+
+        setPreviousContent(newContent)
       }
     }
   })
+
+  const triggerConfetti = () => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#26a69a', '#00897b', '#00796b', '#00695c', '#004d40']
+    })
+  }
 
   useEffect(() => {
     if (displayedNote && headlineEditor && editor) {
@@ -146,7 +155,6 @@ export default function Editor({ pad }: EditorProps) {
       <div className="h-3/4 w-full" style={{ minHeight: '75%', height: 'auto' }}>
         {editor && pad === 'daybook' && <HighlightMenu editor={editor}></HighlightMenu>}{' '}
         <EditorContent editor={editor} />
-        <Confetti active={confetti} />
       </div>
     </div>
   )
