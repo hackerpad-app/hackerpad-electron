@@ -104,11 +104,10 @@
 /* New styles for nested tasks */
 .task-list-inline ul[data-type='taskList'] ul[data-type='taskList'] {
   margin-top: 0.75em;
-  padding-left: 0.5em;
 }
 
 .task-list-inline ul[data-type='taskList'] ul[data-type='taskList'] li {
-  margin-bottom: 0.5em;
+  margin-bottom: 0.25em;
 }
 
 .task-list-inline ul[data-type='taskList'] ul[data-type='taskList'] li:last-child {
@@ -128,18 +127,19 @@
 
 .task-list-inline ul[data-type='taskList'] li > label {
   flex: 0 0 auto;
-  margin-right: 0.75em;
+  margin-right: 0.5em;
   user-select: none;
 }
 
 .task-list-inline ul[data-type='taskList'] li > div {
   flex: 1 1 auto;
+  margin-top: -2px; /* Move the text slightly up */
 }
 
 /* Styles for nested tasks */
 .task-list-inline ul[data-type='taskList'] ul[data-type='taskList'] {
   margin-top: 0.75em;
-  padding-left: 1.5em;
+  padding-left: 0.1rem;
 }
 
 .task-list-inline ul[data-type='taskList'] ul[data-type='taskList'] li {
@@ -150,19 +150,10 @@
   margin-bottom: 0;
 }
 
-/* Additional comments */
-/*
-- display: inline-grid; allows items to flow inline while using grid properties
-- padding: 5px; adds space inside each item
-- margin-left: 5px; creates space between the checkbox and text
-- justify-content: end; aligns grid items to the end of their container
-- grid-template-rows: 15px 1fr; sets a 15px first row and allows the second row to take remaining space
-*/
-
-/* Add these styles for bullet points and ordered lists
+/* Add these styles for bullet points and ordered lists */
 .ProseMirror ul,
 .ProseMirror ol {
-  padding-left: 1rem;
+  padding-left: 1.5rem;
 }
 
 .ProseMirror ul {
@@ -171,7 +162,7 @@
 
 .ProseMirror ol {
   list-style-type: decimal;
-} */
+}
 
 /**/
 

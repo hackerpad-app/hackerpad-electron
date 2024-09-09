@@ -1,5 +1,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
+import { useNotesContext } from './../context/NotesContext'
+
 import Highlight from '@tiptap/extension-highlight'
 import Typography from '@tiptap/extension-typography'
 import StarterKit from '@tiptap/starter-kit'
@@ -9,7 +11,8 @@ import Strike from '@tiptap/extension-strike'
 import Confetti from 'react-dom-confetti'
 import Tools from './EditorTools'
 import HighlightMenu from './HighlightMenu'
-import { useNotesContext } from './../context/NotesContext'
+import BulletList from '@tiptap/extension-bullet-list'
+import ListItem from '@tiptap/extension-list-item'
 
 interface EditorProps {
   pad: string
@@ -64,7 +67,12 @@ export default function Editor({ pad }: EditorProps) {
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        bulletList: false, // Disable default bulletList to use custom configuration
+        listItem: false // Disable default listItem to use custom configuration
+      }),
+      BulletList,
+      ListItem,
       Highlight.configure({ multicolor: true }),
       Typography,
       Strike,
