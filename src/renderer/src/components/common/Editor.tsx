@@ -4,7 +4,7 @@ import Highlight from '@tiptap/extension-highlight'
 import Typography from '@tiptap/extension-typography'
 import StarterKit from '@tiptap/starter-kit'
 import TaskList from '@tiptap/extension-task-list'
-import CustomTaskItem from './custom/taskItem'
+import TaskItem from '@tiptap/extension-task-item'
 import Strike from '@tiptap/extension-strike'
 import Confetti from 'react-dom-confetti'
 import Tools from './EditorTools'
@@ -68,7 +68,7 @@ export default function Editor({ pad }: EditorProps) {
       Highlight.configure({ multicolor: true }),
       Typography,
       Strike,
-      CustomTaskItem.configure({
+      TaskItem.configure({
         nested: true
       }),
       TaskList
@@ -76,7 +76,7 @@ export default function Editor({ pad }: EditorProps) {
     content: ``,
     editorProps: {
       attributes: {
-        class: 'prose max-w-none h-1/2 w-full tiptap '
+        class: 'prose max-w-none h-1/2 w-full tiptap task-list-inline'
       }
     },
     onUpdate: () => {

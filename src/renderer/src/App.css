@@ -10,7 +10,7 @@
   line-height: 1.4;
   font-weight: 400;
 
-  color: #0f0f0f;
+  color: #8a4949;
   background-color: #5c3d3d;
 
   font-synthesis: none;
@@ -40,8 +40,7 @@
   }
 }
 
-/*  scrollbar styles *
-/*Control color of TipTap's Editors; otherise it's midnight blue for some reason*/
+/*Prose CSS */
 
 .prose {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -81,26 +80,100 @@
   border: none;
 }
 
-/*Tasks CSS */
-
-ul[data-type='taskList'] ul {
-  padding-left: 0px; /* How much to move with each nested list*/
+.task-list-inline ul[data-type='taskList'] {
+  padding-left: 0;
 }
 
-ul[data-type='taskList'] {
-  list-style-type: none; /* Remove dots before todos */
-  padding-left: 0px; /* Remove default padding to align nested lists properly */
+.task-list-inline ul[data-type='taskList'] li {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.25em;
+  padding: 0.25em 0;
 }
 
-ul[data-type='taskList'] > li > input,
-ul[data-type='taskList'] > li > div,
-ul[data-type='taskList'] li input,
-ul[data-type='taskList'] li div {
-  display: inline-grid; /*Inline grid works but need to add padding   padding: 5px;  */
-  justify-content: end;
-  grid-template-rows: 15px 1fr; /* 10px regulates space between two task items*/
-  margin-left: 5px; /*Space between box and text*/
+.task-list-inline ul[data-type='taskList'] li > label {
+  flex: 0 0 auto;
+  margin-right: 0.25em;
+  user-select: none;
 }
+
+.task-list-inline ul[data-type='taskList'] li > div {
+  flex: 1 1 auto;
+}
+
+/* New styles for nested tasks */
+.task-list-inline ul[data-type='taskList'] ul[data-type='taskList'] {
+  margin-top: 0.75em;
+  padding-left: 0.5em;
+}
+
+.task-list-inline ul[data-type='taskList'] ul[data-type='taskList'] li {
+  margin-bottom: 0.5em;
+}
+
+.task-list-inline ul[data-type='taskList'] ul[data-type='taskList'] li:last-child {
+  margin-bottom: 0;
+}
+
+.task-list-inline ul[data-type='taskList'] {
+  padding-left: 0;
+}
+
+.task-list-inline ul[data-type='taskList'] li {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.75em;
+  padding: 0.25em 0;
+}
+
+.task-list-inline ul[data-type='taskList'] li > label {
+  flex: 0 0 auto;
+  margin-right: 0.75em;
+  user-select: none;
+}
+
+.task-list-inline ul[data-type='taskList'] li > div {
+  flex: 1 1 auto;
+}
+
+/* Styles for nested tasks */
+.task-list-inline ul[data-type='taskList'] ul[data-type='taskList'] {
+  margin-top: 0.75em;
+  padding-left: 1.5em;
+}
+
+.task-list-inline ul[data-type='taskList'] ul[data-type='taskList'] li {
+  margin-bottom: 0.5em;
+}
+
+.task-list-inline ul[data-type='taskList'] ul[data-type='taskList'] li:last-child {
+  margin-bottom: 0;
+}
+
+/* Additional comments */
+/*
+- display: inline-grid; allows items to flow inline while using grid properties
+- padding: 5px; adds space inside each item
+- margin-left: 5px; creates space between the checkbox and text
+- justify-content: end; aligns grid items to the end of their container
+- grid-template-rows: 15px 1fr; sets a 15px first row and allows the second row to take remaining space
+*/
+
+/* Add these styles for bullet points and ordered lists
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1rem;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+} */
+
+/**/
 
 .modal {
   position: fixed;
@@ -123,6 +196,7 @@ ul[data-type='taskList'] li div {
   background-color: rgba(0, 0, 0, 0.554);
   z-index: 10;
 }
+
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(22, 163, 74, 0.5) transparent;
@@ -141,19 +215,3 @@ ul[data-type='taskList'] li div {
   border-radius: 3px;
   border: transparent;
 }
-
-/* You can remove or comment out these specific styles if you want to use the root styles everywhere */
-/*
-.ProseMirror {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.prose {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  padding-top: 1rem;
-  padding-left: 1rem;
-  width: 100%;
-}
-*/
