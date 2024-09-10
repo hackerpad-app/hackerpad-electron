@@ -259,19 +259,6 @@ export default function Sidebar({ pad, setPad }: SidebarProps): JSX.Element {
   const [showPadsPanel, setPadsPanel] = useState(false)
   const [isMouseOverPanel, setIsMouseOverPanel] = useState(false)
 
-  const [showNewSessionModal, setStartSessionShowModal] = useState(false)
-  const [newTask, setNewTask] = useState('')
-
-  const {
-    tasks,
-    setTasks,
-    sessionActive,
-    sessionInProgress,
-    setSessionActive,
-    setSessionInProgress,
-    setTime
-  } = useTimer()
-
   useEffect((): (() => void) => {
     const handleMouseMove = (e: MouseEvent): void => {
       setPadsPanel(e.clientX < 1 || isMouseOverPanel)
@@ -284,60 +271,20 @@ export default function Sidebar({ pad, setPad }: SidebarProps): JSX.Element {
     }
   }, [isMouseOverPanel])
 
-  // Handling Modal buttons
-  const handleNewSessionStart = (): void => {
-    console.log('handleNewSessionStart')
-    console.log('sessionActive', sessionActive)
-    console.log('sessionInProgress', sessionInProgress)
-    setStartSessionShowModal(true)
-  }
+  // Handling Session Timer
+  // const handleStopSession = (): void => {
+  //   setSessionInProgress(false)
+  // }
 
-  const handleAddTask = (): void => {
-    if (newTask.trim()) {
-      setTasks([...tasks, newTask.trim()])
-      setNewTask('')
-    }
-  }
+  // const handleContinueSession = (): void => {
+  //   setSessionActive(true)
+  // }
 
-  const handleStartSessionModal = (): void => {
-    console.log('handleStartSessionModal')
-    console.log('sessionActive', sessionActive)
-    console.log('sessionInProgress', sessionInProgress)
-
-    setStartSessionShowModal(false)
-
-    //
-    setSessionActive(true)
-    setSessionInProgress(true)
-  }
-
-  // Handling Sidebar buttons
-  const handleStopSession = (): void => {
-    console.log('handleStopSession')
-    console.log('sessionActive', sessionActive)
-    console.log('sessionInProgress', sessionInProgress)
-
-    setSessionInProgress(false)
-  }
-
-  const handleContinueSession = (): void => {
-    console.log('handleContinueSession')
-    console.log('sessionActive', sessionActive)
-    console.log('sessionInProgress', sessionInProgress)
-    setSessionActive(true)
-  }
-
-  const handleResetSession = (): void => {
-    // Reset all Timer states
-    console.log('handleResetSession')
-    console.log('sessionActive', sessionActive)
-    console.log('sessionInProgress', sessionInProgress)
-
-    setSessionInProgress(false)
-    setSessionActive(false)
-    setTasks([])
-    setTime({ minutes: 50, seconds: 0 })
-  }
+  // const handleResetSession = (): void => {
+  //   setSessionInProgress(false)
+  //   setSessionActive(false)
+  //   setTime({ minutes: 50, seconds: 0 })
+  // }
 
   return (
     <div className="relative w-screen h-screen bg-dark-green">
@@ -360,49 +307,8 @@ export default function Sidebar({ pad, setPad }: SidebarProps): JSX.Element {
           setDisplayedNote={setDisplayedNote}
           togglePinNote={togglePinNote}
         />
-        <SessionTimer
-          onRequestStart={handleNewSessionStart}
-          onRequestStop={handleStopSession}
-          onRequestContinue={handleContinueSession}
-          onRequestReset={handleResetSession}
-        />
+        <SessionTimer />
       </div>
-      {showNewSessionModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 bg-black opacity-50"></div>
-          <div className="bg-transparent p-8 rounded-lg shadow-lg z-10 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-6 text-gray-300 text-center">Session Tasks</h2>
-            <div className="flex mb-6">
-              <input
-                type="text"
-                value={newTask}
-                onChange={(e) => setNewTask(e.target.value)}
-                className="flex-grow border border-gray-600 rounded-l px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder="Enter a task"
-              />
-              <button
-                onClick={handleAddTask}
-                className="bg-gray-500 text-white px-4 py-2 rounded-r hover:bg-slate-500 focus:outline-none focus:ring-2 focus:ring-green-400"
-              >
-                Add
-              </button>
-            </div>
-            <ul className="mb-6 space-y-2">
-              {tasks.map((task, index) => (
-                <li key={index} className="bg-slate-900 p-0.5 rounded text-gray-300">
-                  {task}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={handleStartSessionModal}
-              className="bg-gray-500 text-white w-full py-3 rounded hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-green-400"
-            >
-              Start Session
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

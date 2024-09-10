@@ -6,97 +6,73 @@ import { useTimer } from '../context/TimeContext'
 
 import { WORK_SESSION_SECONDS, BREAK_SESSION_SECONDS } from '../../config/timerConfig'
 
-interface SessionTimerProps {
-  onRequestStart: () => void
-  onRequestStop: () => void
-  onRequestContinue: () => void
-  onRequestReset: () => void
-}
+interface SessionTimerProps {}
 
-const SessionTimer: React.FC<SessionTimerProps> = ({
-  onRequestStart,
-  onRequestStop,
-  onRequestContinue,
-  onRequestReset
-}) => {
+const SessionTimer: React.FC<SessionTimerProps> = ({}) => {
   const {
     time,
     setTime,
     sessionActive,
     setSessionActive,
     sessionInProgress,
-    setSessionInProgress,
-    tasks
+    setSessionInProgress
   } = useTimer()
   const intervalRef = useRef<number | null>(null)
   const [isBreak, setIsBreak] = useState(false)
 
   const startTimer = useCallback(() => {
-    console.log('startTimer; ', sessionInProgress)
-    if (sessionInProgress) {
-      console.log('1st condition; continue already started session')
-      onRequestContinue()
+    if (!sessionActive) {
+      setSessionActive(true)
     } else {
       console.log('2nd condition; start a brand new session')
-      onRequestStart()
     }
-    setSessionInProgress(true)
-  }, [sessionActive, onRequestStart])
+  }, [sessionInProgress, setSessionInProgress, setSessionActive])
 
   const stopTimer = useCallback(() => {
-    console.log('stopTimer')
-    console.log('sessionActive', sessionActive)
-    console.log('sessionInProgress', sessionInProgress)
-
     if (sessionActive) {
       if (intervalRef.current !== null) {
         clearInterval(intervalRef.current)
         intervalRef.current = null
       }
-      onRequestStop()
-      setSessionActive(false)
+      setSessionActive(false) // Stop counting down
     }
-  }, [sessionActive, onRequestStop, setSessionActive])
+  }, [sessionActive, setSessionActive])
 
   const resetTimer = useCallback(() => {
-    console.log('resetTimer')
-    console.log('sessionActive', sessionActive)
-    console.log('sessionInProgress', sessionInProgress)
-
-    if (sessionActive || sessionInProgress) {
-      if (intervalRef.current !== null) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
-      onRequestReset()
-      setSessionActive(false)
-      setSessionInProgress(false)
+    if (intervalRef.current !== null) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
     }
-  }, [sessionActive, onRequestReset, setSessionActive, setSessionInProgress])
+    setSessionInProgress(false)
+    setSessionActive(false)
+    const newSessionSeconds = isBreak ? BREAK_SESSION_SECONDS : WORK_SESSION_SECONDS
+    setTime({
+      minutes: Math.floor(newSessionSeconds / 60),
+      seconds: newSessionSeconds % 60
+    })
+  }, [setSessionActive, setSessionInProgress, setTime, isBreak])
 
   useEffect(() => {
     if (!sessionActive) return
 
+    // Handle tics of the timer (either focus or break)
     const tick = () => {
       setTime((prevTime) => {
-        if (prevTime.seconds === 0) {
-          if (prevTime.minutes === 0) {
-            const audio = new Audio('/completed.mp3')
-            audio.play().catch(console.error)
-            setIsBreak((prev) => !prev)
-            const newSessionSeconds = isBreak ? WORK_SESSION_SECONDS : BREAK_SESSION_SECONDS
-            const newTime = {
-              minutes: Math.floor(newSessionSeconds / 60),
-              seconds: newSessionSeconds % 60
-            }
-            return newTime
-          } else {
-            const newTime = { minutes: prevTime.minutes - 1, seconds: 59 }
-            return newTime
+        if (prevTime.seconds === 0 && prevTime.minutes === 0) {
+          const newIsBreak = !isBreak
+          const newSessionSeconds = newIsBreak ? BREAK_SESSION_SECONDS : WORK_SESSION_SECONDS
+          setIsBreak(newIsBreak)
+          setSessionActive(false)
+          return {
+            minutes: Math.floor(newSessionSeconds / 60),
+            seconds: newSessionSeconds % 60
           }
+        } else if (prevTime.seconds === 0) {
+          // Decrement the minutes
+          return { minutes: prevTime.minutes - 1, seconds: 59 }
         } else {
-          const newTime = { ...prevTime, seconds: prevTime.seconds - 1 }
-          return newTime
+          // Decrement the seconds
+          return { ...prevTime, seconds: prevTime.seconds - 1 }
         }
       })
     }
@@ -109,7 +85,7 @@ const SessionTimer: React.FC<SessionTimerProps> = ({
         intervalRef.current = null
       }
     }
-  }, [sessionActive, setTime, isBreak])
+  }, [sessionActive, setTime, isBreak, setIsBreak])
 
   const timerMinutes = time.minutes.toString().padStart(2, '0')
   const timerSeconds = time.seconds.toString().padStart(2, '0')
@@ -148,31 +124,6 @@ const SessionTimer: React.FC<SessionTimerProps> = ({
           </p>
         </div>
       </div>
-
-      {sessionInProgress && tasks.length > 0 && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '300px',
-            right: '10px',
-            width: '200px',
-            maxHeight: '300px',
-            overflowY: 'auto',
-            backgroundColor: 'blue',
-            border: '1px solid #ccc',
-            borderRadius: '5px',
-            padding: '10px',
-            zIndex: 1000
-          }}
-        >
-          <h3 className="font-bold mb-2">Session Goals:</h3>
-          <ul className="list-disc pl-5">
-            {tasks.map((task, index) => (
-              <li key={index}>{task}</li>
-            ))}
-          </ul>
-        </div>
-      )}
     </>
   )
 }

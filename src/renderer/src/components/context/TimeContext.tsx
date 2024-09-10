@@ -6,8 +6,6 @@ interface TimerContextType {
   setTime: React.Dispatch<React.SetStateAction<{ minutes: number; seconds: number }>>
   sessionActive: boolean
   setSessionActive: React.Dispatch<React.SetStateAction<boolean>>
-  tasks: string[]
-  setTasks: React.Dispatch<React.SetStateAction<string[]>>
   sessionInProgress: boolean
   setSessionInProgress: React.Dispatch<React.SetStateAction<boolean>>
 }
@@ -18,11 +16,10 @@ export const TimerProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [time, setTime] = useState({
     minutes: Math.floor(WORK_SESSION_SECONDS / 60),
     seconds: WORK_SESSION_SECONDS % 60
-  })
-  const [tasks, setTasks] = useState<string[]>([])
+  }) // By default, the timer is set to the work session time
 
-  const [sessionActive, setSessionActive] = useState(false)
-  const [sessionInProgress, setSessionInProgress] = useState(false)
+  const [sessionActive, setSessionActive] = useState(false) // Counting down
+  const [sessionInProgress, setSessionInProgress] = useState(false) // Session is in progress
 
   return (
     <TimerContext.Provider
@@ -32,9 +29,7 @@ export const TimerProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         sessionActive,
         setSessionActive,
         sessionInProgress,
-        setSessionInProgress,
-        tasks,
-        setTasks
+        setSessionInProgress
       }}
     >
       {children}
