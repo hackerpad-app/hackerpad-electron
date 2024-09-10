@@ -103,18 +103,24 @@ const SessionTimer: React.FC<SessionTimerProps> = ({}) => {
       >
         <div className="flex justify-center space-x-3 p-59">
           <VscDebugStart
-            className="hover:text-bright-green cursor-pointer"
-            onClick={startTimer}
+            className={`cursor-pointer ${
+              sessionActive ? 'text-gray-400' : 'hover:text-bright-green'
+            }`}
+            onClick={sessionActive ? undefined : startTimer}
             style={{ fontSize: '24px' }}
           />
           <VscDebugStop
-            className="hover:text-bright-green cursor-pointer"
-            onClick={stopTimer}
+            className={`cursor-pointer ${
+              !sessionActive ? 'text-gray-400' : 'hover:text-bright-green'
+            }`}
+            onClick={sessionActive ? stopTimer : undefined}
             style={{ fontSize: '24px' }}
           />
           <GrPowerReset
-            className="hover:text-bright-green cursor-pointer"
-            onClick={resetTimer}
+            className={`cursor-pointer ${
+              !sessionInProgress && !sessionActive ? 'text-gray-400' : 'hover:text-bright-green'
+            }`}
+            onClick={sessionInProgress || sessionActive ? resetTimer : undefined}
             style={{ fontSize: '24px' }}
           />
         </div>
