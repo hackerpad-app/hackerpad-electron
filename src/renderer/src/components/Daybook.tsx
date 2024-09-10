@@ -12,7 +12,7 @@ export default function Daybook({ pad, setPad }: DaybookProps) {
       <div className="flex w-1/5 overflow-hidden h-full">
         <Sidebar pad={pad} setPad={setPad} />
       </div>
-      <div className="flex w-4/5 overflow-y-auto bg-dark-green h-full">
+      <div className="flex w-4/5 overflow-y-auto custom-scrollbar bg-dark-green h-full">
         <Editor pad={pad} />
       </div>
     </div>
