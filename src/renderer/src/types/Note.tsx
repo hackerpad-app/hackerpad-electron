@@ -5,6 +5,7 @@ interface Note {
   headline: string
   content: string
   pad: string
+  pinned: boolean
 }
 
 export default Note

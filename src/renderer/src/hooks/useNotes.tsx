@@ -24,7 +24,8 @@ export default function useNotes(pad: string) {
     content: '',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    pad
+    pad,
+    pinned: false
   })
 
   const daybookTemplate = {
@@ -33,7 +34,8 @@ export default function useNotes(pad: string) {
     content: "<h2>🧠 Keep in mind</h2><p><h2>✅ Today's tasks</h2><p><h2>🐥 Standup</h2><p>",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    pad: 'daybook'
+    pad: 'daybook',
+    pinned: false
   }
 
   const notesTemplate = {
@@ -41,7 +43,8 @@ export default function useNotes(pad: string) {
     content: '<h2>🧠 Thoughts</h2><p>',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    pad: 'notes'
+    pad: 'notes',
+    pinned: false
   }
 
   const searchNotes = (query: string, pad: string) => {
@@ -94,11 +97,34 @@ export default function useNotes(pad: string) {
     handleNotesArray(pad, NotesArray)
   }
 
-  const updateNote = (pad: string, id: string, headline: string, content: string) => {
+  const updateNote = (
+    pad: string,
+    id: string,
+    headline: string,
+    content: string,
+    pinned: boolean
+  ) => {
     const storedNotes = localStorage.getItem(`notes_${pad}`)
     let NotesArray = storedNotes ? JSON.parse(storedNotes) : []
     const updatedNotes = NotesArray.map((note: Note) =>
-      note.id === id ? { ...note, headline, content, updated_at: new Date().toISOString() } : note
+      note.id === id
+        ? { ...note, headline, content, updated_at: new Date().toISOString(), pinned }
+        : note
+    )
+    localStorage.setItem(`notes_${pad}`, JSON.stringify(updatedNotes))
+
+    if (pad === 'notes') {
+      setAllNotesNotes(updatedNotes)
+    } else {
+      setAllNotesDaybook(updatedNotes)
+    }
+  }
+
+  const togglePinNote = (pad: string, id: string) => {
+    const storedNotes = localStorage.getItem(`notes_${pad}`)
+    let NotesArray = storedNotes ? JSON.parse(storedNotes) : []
+    const updatedNotes = NotesArray.map((note: Note) =>
+      note.id === id ? { ...note, pinned: !note.pinned } : note
     )
     localStorage.setItem(`notes_${pad}`, JSON.stringify(updatedNotes))
 
@@ -152,6 +178,7 @@ export default function useNotes(pad: string) {
     editorSearchQuery,
     setEditorSearchQuery,
     editorSearchResults,
-    searchEditorNotes
+    searchEditorNotes,
+    togglePinNote
   }
 }

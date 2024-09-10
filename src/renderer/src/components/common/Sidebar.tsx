@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react'
-
-import { PiCalendarCheckThin } from 'react-icons/pi'
-import { PiPencilCircleThin } from 'react-icons/pi'
+import {
+  PiCalendarCheckThin,
+  PiPencilCircleThin,
+  PiPushPinThin,
+  PiPushPinFill
+} from 'react-icons/pi'
 
 import { useTimer } from '../context/TimeContext'
 import { useNotesContext } from '../context/NotesContext'
@@ -17,19 +20,21 @@ interface NoteListProps {
   pad: string
   searchResults: Note[]
   allNotes: Note[]
-  updateNote: (pad: string, id: string, headline: string, content: string) => void
+  updateNote: (pad: string, id: string, headline: string, content: string, pinned: boolean) => void
   displayedNote: Note | null
   setDisplayedNote: React.Dispatch<React.SetStateAction<Note | null>>
+  togglePinNote: (pad: string, id: string) => void
 }
 
 interface NoteItemProps {
   pad: string
   note: Note
   isSelected: boolean
-  updateNote: (pad: string, id: string, headline: string, content: string) => void
+  updateNote: (pad: string, id: string, headline: string, content: string, pinned: boolean) => void
   displayedNote: Note | null
   setDisplayedNote: React.Dispatch<React.SetStateAction<Note | null>>
   handleSelectNote: (note: Note) => void
+  togglePinNote: (pad: string, id: string) => void
 }
 
 interface PadsPanelProps {
@@ -45,14 +50,26 @@ const NoteItem = ({
   displayedNote,
   handleSelectNote,
   setDisplayedNote,
-  isSelected
+  isSelected,
+  togglePinNote
 }: NoteItemProps): JSX.Element => {
   const handleClick = async (): Promise<void> => {
     if (displayedNote && displayedNote.id !== note.id) {
-      await updateNote(pad, displayedNote.id, displayedNote.headline, displayedNote.content)
+      await updateNote(
+        pad,
+        displayedNote.id,
+        displayedNote.headline,
+        displayedNote.content,
+        displayedNote.pinned
+      )
     }
     handleSelectNote(note)
     setDisplayedNote(note)
+  }
+
+  const handlePinClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    togglePinNote(pad, note.id)
   }
 
   return (
@@ -62,7 +79,7 @@ const NoteItem = ({
       } hover:border-bright-green transition-colors duration-100 justify-between items-center rounded-lg`}
       onClick={handleClick}
     >
-      <div className="p-2">
+      <div className="p-2 flex-grow">
         <div className="text-xs font-bold">
           {note.headline.length > 45
             ? note.headline.substring(0, 45).replace(/<[^>]*>/g, '') + '...'
@@ -74,6 +91,9 @@ const NoteItem = ({
           {new Date(note.created_at).toLocaleDateString()}
         </div>
       )}
+      <div onClick={handlePinClick} className="text-xl text-bright-green cursor-pointer">
+        {note.pinned ? <PiPushPinFill /> : <PiPushPinThin />}
+      </div>
     </div>
   )
 }
@@ -84,14 +104,28 @@ function NoteList({
   allNotes,
   setDisplayedNote,
   updateNote,
-  displayedNote
+  displayedNote,
+  togglePinNote
 }: NoteListProps): JSX.Element {
   const handleSelectNote = (note: Note): void => {
     setDisplayedNote(note)
   }
 
-  // Quick fix to change the name to notes without messing with backend
   const displayName = pad === 'daybook' ? 'Daybook' : 'Notes'
+
+  const sortedNotes = (notes: Note[]) => {
+    const pinnedNotes = notes
+      .filter((note) => note.pinned)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    const unpinnedNotes = notes
+      .filter((note) => !note.pinned)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    return { pinnedNotes, unpinnedNotes }
+  }
+
+  const { pinnedNotes, unpinnedNotes } = sortedNotes(
+    searchResults?.length > 0 ? searchResults : allNotes
+  )
 
   return (
     <div
@@ -107,14 +141,7 @@ function NoteList({
         {displayName.charAt(0).toUpperCase() + displayName.slice(1).toLowerCase()}
       </div>
       <div className="flex-grow overflow-y-auto custom-scrollbar">
-        {(searchResults?.length > 0
-          ? searchResults
-          : allNotes.length > 0
-            ? allNotes.sort(
-                (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-              )
-            : []
-        ).map((note: Note) => (
+        {pinnedNotes.map((note: Note) => (
           <NoteItem
             pad={pad}
             key={note.id}
@@ -124,6 +151,25 @@ function NoteList({
             displayedNote={displayedNote}
             setDisplayedNote={setDisplayedNote}
             handleSelectNote={handleSelectNote}
+            togglePinNote={togglePinNote}
+          />
+        ))}
+        {pinnedNotes.length > 0 && unpinnedNotes.length > 0 && (
+          <div className="flex justify-center my-2">
+            <div className="border-t-2 border-bright-green opacity-30 w-3/4"></div>
+          </div>
+        )}
+        {unpinnedNotes.map((note: Note) => (
+          <NoteItem
+            pad={pad}
+            key={note.id}
+            note={note}
+            isSelected={note.id === displayedNote?.id}
+            updateNote={updateNote}
+            displayedNote={displayedNote}
+            setDisplayedNote={setDisplayedNote}
+            handleSelectNote={handleSelectNote}
+            togglePinNote={togglePinNote}
           />
         ))}
       </div>
@@ -202,7 +248,8 @@ export default function Sidebar({ pad, setPad }: SidebarProps): JSX.Element {
     displayedNoteNotes,
     setDisplayedNoteDaybook,
     setDisplayedNoteNotes,
-    sidebarSearchResults
+    sidebarSearchResults,
+    togglePinNote
   } = useNotesContext()
 
   const allNotes = pad === 'daybook' ? allNotesDaybook : allNotesNotes
@@ -311,6 +358,7 @@ export default function Sidebar({ pad, setPad }: SidebarProps): JSX.Element {
           updateNote={updateNote}
           displayedNote={displayedNote}
           setDisplayedNote={setDisplayedNote}
+          togglePinNote={togglePinNote}
         />
         <SessionTimer
           onRequestStart={handleNewSessionStart}

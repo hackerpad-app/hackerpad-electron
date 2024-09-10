@@ -5,7 +5,7 @@ import Note from '../../types/Note'
 interface NotesContextType {
   createNote: (pad: string, headline?: string) => void
   deleteNote: (pad: string) => void
-  updateNote: (pad: string, id: string, headline: string, content: string) => void
+  updateNote: (pad: string, id: string, headline: string, content: string, pinned: boolean) => void
   sidebarSearchQuery: string
   setSidebarSearchQuery: React.Dispatch<React.SetStateAction<string>>
   setSidebarSearchResults: React.Dispatch<React.SetStateAction<Note[]>>
@@ -21,6 +21,7 @@ interface NotesContextType {
   displayedNoteNotes: Note | null
   setDisplayedNoteDaybook: React.Dispatch<React.SetStateAction<Note | null>>
   setDisplayedNoteNotes: React.Dispatch<React.SetStateAction<Note | null>>
+  togglePinNote: (pad: string, id: string) => void
 }
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined)

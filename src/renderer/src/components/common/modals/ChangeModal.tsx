@@ -6,6 +6,7 @@ interface Note {
   updated_at: string;
   headline: string;
   content: string;
+  pinned: boolean;
 }
 interface ChangeModalProps {
   onClose: (headline: string, content: string) => void;
