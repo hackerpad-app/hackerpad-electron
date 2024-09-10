@@ -1,28 +1,28 @@
-import React, { createContext, useState, useContext, ReactNode } from "react";
+import React, { createContext, useState, useContext, ReactNode } from 'react'
+import { WORK_SESSION_SECONDS } from '../../config/timerConfig'
 
 interface TimerContextType {
-  time: { minutes: number; seconds: number };
-  setTime: React.Dispatch<
-    React.SetStateAction<{ minutes: number; seconds: number }>
-  >;
-  sessionActive: boolean;
-  setSessionActive: React.Dispatch<React.SetStateAction<boolean>>;
-  tasks: string[];
-  setTasks: React.Dispatch<React.SetStateAction<string[]>>;
-  sessionInProgress: boolean;
-  setSessionInProgress: React.Dispatch<React.SetStateAction<boolean>>;
+  time: { minutes: number; seconds: number }
+  setTime: React.Dispatch<React.SetStateAction<{ minutes: number; seconds: number }>>
+  sessionActive: boolean
+  setSessionActive: React.Dispatch<React.SetStateAction<boolean>>
+  tasks: string[]
+  setTasks: React.Dispatch<React.SetStateAction<string[]>>
+  sessionInProgress: boolean
+  setSessionInProgress: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const TimerContext = createContext<TimerContextType | undefined>(undefined);
+const TimerContext = createContext<TimerContextType | undefined>(undefined)
 
-export const TimerProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
-  const [time, setTime] = useState({ minutes: 50, seconds: 0 });
-  const [tasks, setTasks] = useState<string[]>([]);
+export const TimerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [time, setTime] = useState({
+    minutes: Math.floor(WORK_SESSION_SECONDS / 60),
+    seconds: WORK_SESSION_SECONDS % 60
+  })
+  const [tasks, setTasks] = useState<string[]>([])
 
-  const [sessionActive, setSessionActive] = useState(false);
-  const [sessionInProgress, setSessionInProgress] = useState(false);
+  const [sessionActive, setSessionActive] = useState(false)
+  const [sessionInProgress, setSessionInProgress] = useState(false)
 
   return (
     <TimerContext.Provider
@@ -34,18 +34,18 @@ export const TimerProvider: React.FC<{ children: ReactNode }> = ({
         sessionInProgress,
         setSessionInProgress,
         tasks,
-        setTasks,
+        setTasks
       }}
     >
       {children}
     </TimerContext.Provider>
-  );
-};
+  )
+}
 
 export const useTimer = () => {
-  const context = useContext(TimerContext);
+  const context = useContext(TimerContext)
   if (context === undefined) {
-    throw new Error("useTimer must be used within a TimerProvider");
+    throw new Error('useTimer must be used within a TimerProvider')
   }
-  return context;
-};
+  return context
+}

@@ -1,14 +1,10 @@
-import React, { useEffect, useRef, useCallback } from 'react'
-import { invoke } from '@tauri-apps/api/tauri'
+import React, { useEffect, useRef, useCallback, useState } from 'react'
 import { VscDebugStart, VscDebugStop } from 'react-icons/vsc'
 import { GrPowerReset } from 'react-icons/gr'
 
 import { useTimer } from '../context/TimeContext'
 
-export const config = {
-  session_time: 1,
-  break_time: 1
-}
+import { WORK_SESSION_SECONDS, BREAK_SESSION_SECONDS } from '../../config/timerConfig'
 
 interface SessionTimerProps {
   onRequestStart: () => void
@@ -33,15 +29,7 @@ const SessionTimer: React.FC<SessionTimerProps> = ({
     tasks
   } = useTimer()
   const intervalRef = useRef<number | null>(null)
-
-  const updateTrayTime = useCallback((minutes: number, seconds: number) => {
-    const timeString = `${minutes.toString().padStart(2, '0')}:${seconds
-      .toString()
-      .padStart(2, '0')}`
-    invoke('update_tray_time_command', { time: timeString }).catch((error) =>
-      console.error('Failed to update time in tray:', error)
-    )
-  }, [])
+  const [isBreak, setIsBreak] = useState(false)
 
   const startTimer = useCallback(() => {
     console.log('startTimer; ', sessionInProgress)
@@ -95,17 +83,19 @@ const SessionTimer: React.FC<SessionTimerProps> = ({
           if (prevTime.minutes === 0) {
             const audio = new Audio('/completed.mp3')
             audio.play().catch(console.error)
-            const newTime = { minutes: config.session_time, seconds: 0 }
-            updateTrayTime(newTime.minutes, newTime.seconds)
+            setIsBreak((prev) => !prev)
+            const newSessionSeconds = isBreak ? WORK_SESSION_SECONDS : BREAK_SESSION_SECONDS
+            const newTime = {
+              minutes: Math.floor(newSessionSeconds / 60),
+              seconds: newSessionSeconds % 60
+            }
             return newTime
           } else {
             const newTime = { minutes: prevTime.minutes - 1, seconds: 59 }
-            updateTrayTime(newTime.minutes, newTime.seconds)
             return newTime
           }
         } else {
           const newTime = { ...prevTime, seconds: prevTime.seconds - 1 }
-          updateTrayTime(newTime.minutes, newTime.seconds)
           return newTime
         }
       })
@@ -119,7 +109,7 @@ const SessionTimer: React.FC<SessionTimerProps> = ({
         intervalRef.current = null
       }
     }
-  }, [sessionActive, updateTrayTime, setTime])
+  }, [sessionActive, setTime, isBreak])
 
   const timerMinutes = time.minutes.toString().padStart(2, '0')
   const timerSeconds = time.seconds.toString().padStart(2, '0')
