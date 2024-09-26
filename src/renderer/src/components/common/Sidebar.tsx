@@ -10,6 +10,9 @@ import { useTimer } from '../context/TimeContext'
 import { useNotesContext } from '../context/NotesContext'
 import Note from '../../types/Note'
 import SessionTimer from './SessionTimer'
+import SessionGoalsWindow from './SessionGoalsWindow'
+import MovableGoalsWindow from './MovableGoalsWindow'
+import { useSessionGoals } from '../context/SessionGoalsContext'
 
 interface SidebarProps {
   pad: string
@@ -271,20 +274,7 @@ export default function Sidebar({ pad, setPad }: SidebarProps): JSX.Element {
     }
   }, [isMouseOverPanel])
 
-  // Handling Session Timer
-  // const handleStopSession = (): void => {
-  //   setSessionInProgress(false)
-  // }
-
-  // const handleContinueSession = (): void => {
-  //   setSessionActive(true)
-  // }
-
-  // const handleResetSession = (): void => {
-  //   setSessionInProgress(false)
-  //   setSessionActive(false)
-  //   setTime({ minutes: 50, seconds: 0 })
-  // }
+  const { showGoalsWindow, showMovableGoalsWindow } = useSessionGoals()
 
   return (
     <div className="relative w-screen h-screen bg-dark-green">
@@ -309,6 +299,8 @@ export default function Sidebar({ pad, setPad }: SidebarProps): JSX.Element {
         />
         <SessionTimer />
       </div>
+      {showGoalsWindow && <SessionGoalsWindow />}
+      {showMovableGoalsWindow && <MovableGoalsWindow />}
     </div>
   )
 }

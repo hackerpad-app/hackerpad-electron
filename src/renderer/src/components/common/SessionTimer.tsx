@@ -3,6 +3,7 @@ import { VscDebugStart, VscDebugStop } from 'react-icons/vsc'
 import { GrPowerReset } from 'react-icons/gr'
 
 import { useTimer } from '../context/TimeContext'
+import { useSessionGoals } from '../context/SessionGoalsContext'
 
 import { WORK_SESSION_SECONDS, BREAK_SESSION_SECONDS } from '../../config/timerConfig'
 
@@ -19,6 +20,7 @@ const SessionTimer: React.FC<SessionTimerProps> = ({}) => {
   } = useTimer()
   const intervalRef = useRef<number | null>(null)
   const [isBreak, setIsBreak] = useState(false)
+  const { setShowGoalsWindow } = useSessionGoals()
 
   const startTimer = useCallback(() => {
     if (!sessionActive) {
@@ -86,6 +88,13 @@ const SessionTimer: React.FC<SessionTimerProps> = ({}) => {
       }
     }
   }, [sessionActive, setTime, isBreak, setIsBreak])
+
+  useEffect(() => {
+    if (sessionActive && !sessionInProgress) {
+      setShowGoalsWindow(true)
+      setSessionInProgress(true)
+    }
+  }, [sessionActive, sessionInProgress, setShowGoalsWindow, setSessionInProgress])
 
   const timerMinutes = time.minutes.toString().padStart(2, '0')
   const timerSeconds = time.seconds.toString().padStart(2, '0')
