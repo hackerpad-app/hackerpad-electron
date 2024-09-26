@@ -7,6 +7,7 @@ interface SessionGoalsContextType {
   setShowGoalsWindow: React.Dispatch<React.SetStateAction<boolean>>
   showMovableGoalsWindow: boolean
   setShowMovableGoalsWindow: React.Dispatch<React.SetStateAction<boolean>>
+  transitionToMovableWindow: () => void
 }
 
 const SessionGoalsContext = createContext<SessionGoalsContextType | undefined>(undefined)
@@ -16,6 +17,11 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [showGoalsWindow, setShowGoalsWindow] = useState(false)
   const [showMovableGoalsWindow, setShowMovableGoalsWindow] = useState(false)
 
+  const transitionToMovableWindow = () => {
+    setShowGoalsWindow(false)
+    setShowMovableGoalsWindow(true)
+  }
+
   return (
     <SessionGoalsContext.Provider
       value={{
@@ -24,7 +30,8 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
         showGoalsWindow,
         setShowGoalsWindow,
         showMovableGoalsWindow,
-        setShowMovableGoalsWindow
+        setShowMovableGoalsWindow,
+        transitionToMovableWindow
       }}
     >
       {children}

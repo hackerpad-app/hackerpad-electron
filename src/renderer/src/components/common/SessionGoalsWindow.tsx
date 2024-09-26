@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useSessionGoals } from '../context/SessionGoalsContext'
 
 const SessionGoalsWindow: React.FC = () => {
-  const { goals, setGoals, setShowGoalsWindow, setShowMovableGoalsWindow } = useSessionGoals()
+  const { goals, setGoals, showGoalsWindow, transitionToMovableWindow } = useSessionGoals()
   const [newGoal, setNewGoal] = useState('')
 
   const handleAddGoal = () => {
@@ -12,10 +12,7 @@ const SessionGoalsWindow: React.FC = () => {
     }
   }
 
-  const handleClose = () => {
-    setShowGoalsWindow(false)
-    setShowMovableGoalsWindow(true)
-  }
+  if (!showGoalsWindow) return null
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -35,7 +32,7 @@ const SessionGoalsWindow: React.FC = () => {
         <button onClick={handleAddGoal} className="bg-green-500 text-white p-2 rounded w-full">
           Add Goal
         </button>
-        <button onClick={handleClose} className="bg-red-500 text-white p-2 rounded w-full mt-2">
+        <button onClick={transitionToMovableWindow} className="bg-red-500 text-white p-2 rounded w-full mt-2">
           Let's Go!
         </button>
       </div>
