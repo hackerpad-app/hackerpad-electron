@@ -6,7 +6,7 @@ import {
   PiPushPinFill
 } from 'react-icons/pi'
 
-import { useTimer } from '../context/TimeContext'
+//import { useTimer } from '../context/TimeContext'
 import { useNotesContext } from '../context/NotesContext'
 import Note from '../../types/Note'
 import SessionTimer from './SessionTimer'

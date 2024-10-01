@@ -1,8 +1,13 @@
-import { ElectronAPI } from '@electron-toolkit/preload'
+export interface IElectronAPI {
+  ipcRenderer: {
+    send: (channel: string, data: any) => void
+    on: (channel: string, func: (...args: any[]) => void) => void
+    removeListener: (channel: string, func: (...args: any[]) => void) => void
+  }
+}
 
 declare global {
   interface Window {
-    electron: ElectronAPI
-    api: unknown
+    electron: IElectronAPI
   }
 }

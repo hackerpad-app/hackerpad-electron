@@ -1,11 +1,16 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+
+// Use path.join for the icon path
+const icon = join(__dirname, '../../resources/icon.png')
+
+let mainWindow: BrowserWindow | null = null
+let movableGoalsWindow: BrowserWindow | null = null
 
 function createWindow(): void {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
@@ -21,18 +26,63 @@ function createWindow(): void {
     mainWindow.show()
   })
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
-    return { action: 'deny' }
-  })
-
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    // Replace loadFile with loadURL
+    mainWindow.loadURL(`file://${join(__dirname, '../renderer/index.html')}`)
   }
+
+  // Open DevTools if in development mode
+  if (is.dev) {
+    mainWindow.webContents.openDevTools()
+  }
+}
+
+function createMovableGoalsWindow(goals: string[]): void {
+  if (!mainWindow) {
+    console.error('Main window does not exist')
+    return
+  }
+
+  movableGoalsWindow = new BrowserWindow({
+    width: 300,
+    height: 200,
+    parent: mainWindow,
+    frame: false,
+    resizable: false,
+    show: false,
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      nodeIntegration: false,
+      contextIsolation: true
+    }
+  })
+
+  movableGoalsWindow.loadURL(`file://${join(__dirname, '../renderer/index.html')}#/movable-goals`)
+
+  movableGoalsWindow.webContents.on('did-finish-load', () => {
+    movableGoalsWindow?.webContents.send('update-goals', goals)
+    movableGoalsWindow?.show()
+  })
+
+  movableGoalsWindow.on('closed', () => {
+    movableGoalsWindow = null
+  })
+
+  // Position the window in the bottom-right corner of the main window
+  const [width, height] = mainWindow.getSize()
+  movableGoalsWindow.setPosition(width - 320, height - 220)
+
+  // Update the movable goals window position when the main window is resized
+  mainWindow.on('resize', () => {
+    if (movableGoalsWindow) {
+      const [newWidth, newHeight] = mainWindow!.getSize()
+      movableGoalsWindow.setPosition(newWidth - 320, newHeight - 220)
+    }
+  })
 }
 
 // This method will be called when Electron has finished
@@ -51,6 +101,24 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  // Handle opening movable goals window
+  ipcMain.on('open-movable-goals-window', (_event, goals) => {
+    if (!movableGoalsWindow) {
+      createMovableGoalsWindow(goals)
+    } else {
+      movableGoalsWindow.webContents.send('update-goals', goals)
+      movableGoalsWindow.show()
+    }
+  })
+
+  // Add a handler to close the movable goals window
+  ipcMain.on('close-movable-goals-window', () => {
+    if (movableGoalsWindow && mainWindow) {
+      mainWindow.removeBrowserView(movableGoalsWindow)
+      movableGoalsWindow = null
+    }
+  })
 
   createWindow()
 

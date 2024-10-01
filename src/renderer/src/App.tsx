@@ -10,6 +10,7 @@ export default function App(): JSX.Element | null {
   const [pad, setPad] = useState<string | null>('daybook')
 
   return (
+    
     <TimerProvider>
       <NotesProvider pad={pad || 'daybook'}>
         <SessionGoalsProvider>
