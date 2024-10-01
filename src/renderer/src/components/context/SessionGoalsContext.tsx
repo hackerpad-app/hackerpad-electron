@@ -1,8 +1,15 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react'
 
+export interface Goal {
+  text: string
+  finished: boolean
+}
+
 interface SessionGoalsContextType {
-  goals: string[]
-  setGoals: React.Dispatch<React.SetStateAction<string[]>>
+  goals: Goal[]
+  setGoals: React.Dispatch<React.SetStateAction<Goal[]>>
+  addGoal: (text: string) => void
+  toggleGoalStatus: (index: number) => void
   showGoalsWindow: boolean
   setShowGoalsWindow: React.Dispatch<React.SetStateAction<boolean>>
   showMovableGoalsWindow: boolean
@@ -13,9 +20,19 @@ interface SessionGoalsContextType {
 const SessionGoalsContext = createContext<SessionGoalsContextType | undefined>(undefined)
 
 export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [goals, setGoals] = useState<string[]>([])
+  const [goals, setGoals] = useState<Goal[]>([])
   const [showGoalsWindow, setShowGoalsWindow] = useState(false)
   const [showMovableGoalsWindow, setShowMovableGoalsWindow] = useState(false)
+
+  const addGoal = (text: string) => {
+    setGoals((prevGoals) => [...prevGoals, { text, finished: false }])
+  }
+
+  const toggleGoalStatus = (index: number) => {
+    setGoals((prevGoals) =>
+      prevGoals.map((goal, i) => (i === index ? { ...goal, finished: !goal.finished } : goal))
+    )
+  }
 
   const transitionToMovableWindow = () => {
     setShowGoalsWindow(false)
@@ -27,6 +44,8 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
       value={{
         goals,
         setGoals,
+        addGoal,
+        toggleGoalStatus,
         showGoalsWindow,
         setShowGoalsWindow,
         showMovableGoalsWindow,

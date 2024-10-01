@@ -17,6 +17,12 @@ function createWindow(): void {
     }
   })
 
+  // Load the index.html file
+  mainWindow.loadFile('index.html')
+
+  // Open the DevTools.
+  mainWindow.webContents.openDevTools()
+
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
   })
