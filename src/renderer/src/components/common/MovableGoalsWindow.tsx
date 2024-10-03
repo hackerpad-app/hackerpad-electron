@@ -6,6 +6,7 @@ import { SlArrowRight, SlArrowLeft } from 'react-icons/sl'
 import { GiDistraction } from 'react-icons/gi'
 import { FaRegCircle } from 'react-icons/fa'
 import { IoCheckmarkDoneCircleOutline, IoCheckmarkDoneCircleSharp } from 'react-icons/io5'
+import { stringify } from 'querystring'
 
 // Updated LargeGoalsView component
 const LargeGoalsView: React.FC<{ onShrink: () => void }> = ({ onShrink }) => {
@@ -37,7 +38,7 @@ const LargeGoalsView: React.FC<{ onShrink: () => void }> = ({ onShrink }) => {
                 <p
                   className="text-bright-green text-lg flex-grow"
                   style={{
-                    textDecoration: isFinished ? 'line-through' : 'none',
+                    textDecorationLine: goal.finished ? 'line-through' : 'none',
                     textDecorationColor: 'currentColor',
                     textDecorationThickness: '1px'
                   }}
