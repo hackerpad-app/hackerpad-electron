@@ -4,9 +4,7 @@ import { useTimer } from '../context/TimeContext'
 import { useSessionGoals } from '../context/SessionGoalsContext'
 import { SlArrowRight, SlArrowLeft } from 'react-icons/sl'
 import { GiDistraction } from 'react-icons/gi'
-import { FaRegCircle } from 'react-icons/fa'
 import { IoCheckmarkDoneCircleOutline, IoCheckmarkDoneCircleSharp } from 'react-icons/io5'
-import { stringify } from 'querystring'
 
 // Updated LargeGoalsView component
 const LargeGoalsView: React.FC<{ onShrink: () => void }> = ({ onShrink }) => {
@@ -21,8 +19,6 @@ const LargeGoalsView: React.FC<{ onShrink: () => void }> = ({ onShrink }) => {
           <p className="text-bright-green text-lg">No goals added yet.</p>
         ) : (
           goals.map((goal, index) => {
-            const isFinished =
-              typeof goal === 'object' && 'finished' in goal ? goal.finished : false
             const goalText =
               typeof goal === 'string'
                 ? goal
