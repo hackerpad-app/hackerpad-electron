@@ -30,7 +30,16 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   const toggleGoalStatus = (index: number) => {
     setGoals((prevGoals) =>
-      prevGoals.map((goal, i) => (i === index ? { ...goal, finished: !goal.finished } : goal))
+      prevGoals.map((goal, i) => {
+        if (i === index) {
+          if (typeof goal === 'string') {
+            return { text: goal, finished: true }
+          } else {
+            return { ...goal, finished: !goal.finished }
+          }
+        }
+        return goal
+      })
     )
   }
 
