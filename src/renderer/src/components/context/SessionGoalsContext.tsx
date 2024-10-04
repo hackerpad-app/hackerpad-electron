@@ -24,11 +24,11 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [showGoalsWindow, setShowGoalsWindow] = useState(false)
   const [showMovableGoalsWindow, setShowMovableGoalsWindow] = useState(false)
 
-  const addGoal = (text: string) => {
+  const addGoal = (text: string): void => {
     setGoals((prevGoals) => [...prevGoals, { text, finished: false }])
   }
 
-  const toggleGoalStatus = (index: number) => {
+  const toggleGoalStatus = (index: number): void => {
     setGoals((prevGoals) =>
       prevGoals.map((goal, i) => {
         if (i === index) {
@@ -43,7 +43,7 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
     )
   }
 
-  const transitionToMovableWindow = () => {
+  const transitionToMovableWindow = (): void => {
     setShowGoalsWindow(false)
     setShowMovableGoalsWindow(true)
   }
@@ -67,7 +67,7 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
   )
 }
 
-export const useSessionGoals = () => {
+export const useSessionGoals = (): SessionGoalsContextType => {
   const context = useContext(SessionGoalsContext)
   if (context === undefined) {
     throw new Error('useSessionGoals must be used within a SessionGoalsProvider')

@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
 import { useSessionGoals } from '../context/SessionGoalsContext'
+import { FaPlay } from 'react-icons/fa'
 
 const SessionGoalsWindow: React.FC = () => {
-  const { goals, setGoals, showGoalsWindow, transitionToMovableWindow } = useSessionGoals()
+  const { goals, addGoal, showGoalsWindow, transitionToMovableWindow } = useSessionGoals()
   const [newGoal, setNewGoal] = useState('')
 
-  const handleAddGoal = () => {
+  const handleAddGoal = (e: React.FormEvent): void => {
+    e.preventDefault()
     if (newGoal.trim()) {
-      setGoals([...goals, newGoal])
+      addGoal(newGoal.trim())
       setNewGoal('')
     }
   }
@@ -16,25 +18,38 @@ const SessionGoalsWindow: React.FC = () => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-5 rounded-lg shadow-lg w-1/3">
-        <h2 className="text-xl font-bold mb-4">Session Goals</h2>
-        <ul>
-          {goals.map((goal, index) => (
-            <li key={index}>{goal}</li>
-          ))}
-        </ul>
-        <input
-          type="text"
-          value={newGoal}
-          onChange={(e) => setNewGoal(e.target.value)}
-          className="border p-2 rounded w-full mb-2"
-        />
-        <button onClick={handleAddGoal} className="bg-green-500 text-white p-2 rounded w-full">
-          Add Goal
-        </button>
-        <button onClick={transitionToMovableWindow} className="bg-red-500 text-white p-2 rounded w-full mt-2">
-          Let's Go!
-        </button>
+      <div className="bg-session-goals-green rounded-lg shadow-lg w-96 max-w-full">
+        <div className="flex justify-between items-center p-4">
+          <h2 className="text-xl font-bold">Session Goals</h2>
+          <button
+            onClick={transitionToMovableWindow}
+            className="text-bright-green bg-transparent p-1 transition-colors"
+            aria-label="Start session"
+          >
+            <FaPlay />
+          </button>
+        </div>
+        <form onSubmit={handleAddGoal} className="px-4 pb-4">
+          <input
+            type="text"
+            value={newGoal}
+            onChange={(e) => setNewGoal(e.target.value)}
+            placeholder="Tasks..."
+            className="w-full p-2 text-lg rounded bg-white bg-opacity-5"
+          />
+        </form>
+        {goals.length > 0 && (
+          <>
+            <div className="mx-4 border-t border-gray-300"></div>
+            <ul className="p-4 space-y-2 max-h-60 overflow-y-auto">
+              {goals.map((goal, index) => (
+                <li key={index} className="bg-macdonalds-shit text-black p-2 rounded">
+                  {typeof goal === 'string' ? goal : goal.text}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </div>
     </div>
   )
