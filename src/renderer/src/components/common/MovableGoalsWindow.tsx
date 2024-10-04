@@ -95,8 +95,10 @@ const MovableGoalsWindow: React.FC = () => {
   return (
     <Draggable handle=".handle">
       <div
-        className={`fixed top-2 right-1 ${
-          isLarge ? 'w-1/2 flex-grow max-h-[80vh]' : 'w-96 h-12'
+        className={`fixed ${
+          isLarge
+            ? 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 max-h-[80vh]'
+            : 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-12'
         } bg-side-window-green rounded-lg shadow-lg z-50 flex flex-col`}
       >
         {isLarge ? (
