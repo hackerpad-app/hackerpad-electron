@@ -1,4 +1,4 @@
-import React from 'react'
+import * as React from 'react'
 import { useTimer } from '../context/TimeContext'
 import { VscDebugStart, VscDebugStop } from 'react-icons/vsc'
 import { GrPowerReset } from 'react-icons/gr'

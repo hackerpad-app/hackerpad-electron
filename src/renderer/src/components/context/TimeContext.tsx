@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
+
+import * as React from 'react'
 import { WORK_SESSION_SECONDS, BREAK_SESSION_SECONDS } from '../../config/timerConfig'
-import { GiConsoleController } from 'react-icons/gi'
 
 interface Time {
   minutes: number
@@ -19,7 +20,7 @@ interface TimerContextType {
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined)
 
-export const useTimer = () => {
+export const useTimer = (): TimerContextType => {
   const context = useContext(TimerContext)
   if (context === undefined) {
     throw new Error('useTimer must be used within a TimerProvider')
@@ -47,7 +48,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [])
 
   const resetTimer = useCallback(() => {
-    console.log('resetTimer called')
     setSessionClockTicking(false)
     setSessionInProgress(false)
     const newSessionSeconds = isBreak ? BREAK_SESSION_SECONDS : WORK_SESSION_SECONDS
@@ -83,7 +83,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       intervalRef.current = null
     }
 
-    return () => {
+    return (): void => {
       if (intervalRef.current !== null) {
         clearInterval(intervalRef.current)
         intervalRef.current = null
