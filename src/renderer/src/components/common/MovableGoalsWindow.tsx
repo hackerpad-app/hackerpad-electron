@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import Draggable from 'react-draggable'
 import { useTimer } from '../context/TimeContext'
 import { useSessionGoals } from '../context/SessionGoalsContext'
@@ -76,6 +76,7 @@ const MovableGoalsWindow: React.FC = () => {
   const [currentDistraction, setCurrentDistraction] = useState('')
   const { time } = useTimer()
   const { addGoal } = useSessionGoals()
+  const nodeRef = useRef(null)
 
   const toggleSize = () => setIsLarge(!isLarge)
 
@@ -93,8 +94,9 @@ const MovableGoalsWindow: React.FC = () => {
   }
 
   return (
-    <Draggable handle=".handle">
+    <Draggable handle=".handle" nodeRef={nodeRef}>
       <div
+        ref={nodeRef}
         className={`fixed ${
           isLarge
             ? 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 max-h-[80vh]'
