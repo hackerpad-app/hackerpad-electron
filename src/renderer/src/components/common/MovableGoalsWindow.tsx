@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react'
+import * as React from 'react'
+import { useState, useRef } from 'react'
 import Draggable from 'react-draggable'
 import { useTimer } from '../context/TimeContext'
 import { useSessionGoals } from '../context/SessionGoalsContext'
@@ -78,13 +79,13 @@ const MovableGoalsWindow: React.FC = () => {
   const { addGoal } = useSessionGoals()
   const nodeRef = useRef(null)
 
-  const toggleSize = () => setIsLarge(!isLarge)
+  const toggleSize = (): void => setIsLarge(!isLarge)
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setCurrentDistraction(e.target.value)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault()
     if (currentDistraction.trim()) {
       setDistractions([...distractions, currentDistraction.trim()])

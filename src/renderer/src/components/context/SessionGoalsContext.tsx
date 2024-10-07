@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react'
+import * as React from 'react'
+import { createContext, useState, useContext, ReactNode } from 'react'
 
 export interface Goal {
   text: string
