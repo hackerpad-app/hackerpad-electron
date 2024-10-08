@@ -62,7 +62,6 @@ const HighlightMenu = ({ editor }: HighlightMenuProps) => {
 
       try {
         updateNote('notes', note.id, note.headline, newContent)
-        console.log('Note updated successfully')
       } catch (error) {
         console.error('Error updating note:', error)
       }

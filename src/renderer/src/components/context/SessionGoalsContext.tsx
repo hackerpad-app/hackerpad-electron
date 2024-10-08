@@ -8,12 +8,18 @@ export interface Goal {
   finished: boolean
 }
 
+export interface Distraction {
+  id: string
+  text: string
+}
+
 export interface Session {
   id: string
+  noteId: string
+  startTime: string
+  endTime: string | null
   goals: Goal[]
-  distractions: string[]  // Add this line
-  startTime: number
-  endTime: number | null
+  distractions: Distraction[]
 }
 
 interface SessionGoalsContextType {
@@ -26,9 +32,9 @@ interface SessionGoalsContextType {
   showMovableGoalsWindow: boolean
   setShowMovableGoalsWindow: React.Dispatch<React.SetStateAction<boolean>>
   transitionToMovableWindow: () => void
-  startNewSession: () => void
+  startNewSession: (noteId: string) => void
   endCurrentSession: () => void
-  addDistraction: (text: string) => void  // Add this line
+  addDistraction: (text: string) => void 
 }
 
 const SessionGoalsContext = createContext<SessionGoalsContextType | undefined>(undefined)
@@ -41,12 +47,16 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   const addGoal = useCallback(
     (text: string): void => {
+      console.log('Adding goal:', text)
       if (currentSession) {
+        console.log('to note-id', currentSession.noteId)
         const newGoal = { id: uuidv4(), text, finished: false }
         setCurrentSession((prevSession) => ({
           ...prevSession!,
           goals: [...prevSession!.goals, newGoal]
         }))
+      } else {
+        console.warn('Attempted to add a goal without an active session')
       }
     },
     [currentSession]
@@ -69,9 +79,10 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
   const addDistraction = useCallback(
     (text: string): void => {
       if (currentSession) {
+        const newDistraction: Distraction = { id: uuidv4(), text }
         setCurrentSession((prevSession) => ({
           ...prevSession!,
-          distractions: [...prevSession!.distractions, text]
+          distractions: [...prevSession!.distractions, newDistraction]
         }))
       }
     },
@@ -83,22 +94,24 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
     setShowMovableGoalsWindow(true)
   }, [])
 
-  const startNewSession = useCallback((): void => {
+  const startNewSession = useCallback((noteId: string) => {
     const newSession: Session = {
       id: uuidv4(),
+      noteId,
+      startTime: new Date().toISOString(),
+      endTime: null,
       goals: [],
-      distractions: [],  // Initialize distractions array
-      startTime: Date.now(),
-      endTime: null
+      distractions: []
     }
-    console.log('newSession', newSession)
     setCurrentSession(newSession)
-    console.log('currentSession', currentSession)
   }, [])
 
   const endCurrentSession = useCallback((): void => {
     if (currentSession) {
-      const endedSession = { ...currentSession, endTime: Date.now() }
+      const endedSession = {
+        ...currentSession,
+        endTime: new Date().toISOString()
+      }
       setCompletedSessions((prevSessions) => [...prevSessions, endedSession])
       setCurrentSession(null)
     }
@@ -118,7 +131,7 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
         transitionToMovableWindow,
         startNewSession,
         endCurrentSession,
-        addDistraction  // Add this line
+        addDistraction
       }}
     >
       {children}

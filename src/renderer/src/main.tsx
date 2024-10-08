@@ -4,10 +4,7 @@ import * as React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 
-console.log('Main.tsx is running')
-
 const rootElement = document.getElementById('root')
-console.log('Root element:', rootElement)
 
 if (rootElement) {
   ReactDOM.createRoot(rootElement).render(

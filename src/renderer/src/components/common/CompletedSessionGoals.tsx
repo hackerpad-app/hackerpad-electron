@@ -3,28 +3,35 @@ import { createPortal } from 'react-dom'
 import { useSessionGoals, Session } from './../context/SessionGoalsContext'
 import { GiDistraction } from 'react-icons/gi'
 
-const CompletedSessionGoals: React.FC = () => {
+interface CompletedSessionGoalsProps {
+  noteId: string
+}
+
+const CompletedSessionGoals: React.FC<CompletedSessionGoalsProps> = ({ noteId }) => {
   const { completedSessions } = useSessionGoals()
   const [hoveredSession, setHoveredSession] = useState<Session | null>(null)
   const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 })
 
-  if (completedSessions.length === 0) {
+  const filteredSessions = completedSessions.filter((session) => session.noteId === noteId)
+
+  if (filteredSessions.length === 0) {
     return null
   }
 
-  const totalCompletedGoals = completedSessions.reduce(
+  const totalCompletedGoals = filteredSessions.reduce(
     (total, session) => total + session.goals.filter((goal) => goal.finished).length,
     0
   )
-  const totalGoals = completedSessions.reduce((total, session) => total + session.goals.length, 0)
+  const totalGoals = filteredSessions.reduce((total, session) => total + session.goals.length, 0)
 
+  console.log('completedSessionsGoals rendered')
   const finishRate = totalGoals > 0 ? (totalCompletedGoals / totalGoals) * 100 : 0
   const formattedFinishRate = finishRate.toFixed(1)
 
   return (
     <>
       <div className="flex flex-wrap gap-2 p-5 items-center">
-        {completedSessions.map((session) => (
+        {filteredSessions.map((session) => (
           <SessionPin
             key={session.id}
             session={session}

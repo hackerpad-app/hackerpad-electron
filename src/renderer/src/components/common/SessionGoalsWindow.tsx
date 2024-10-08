@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react'
 import { useSessionGoals } from '../context/SessionGoalsContext'
 import { FaPlay } from 'react-icons/fa'
+import { useNotesContext } from './../context/NotesContext'
 
 const SessionGoalsWindow: React.FC = () => {
   const { currentSession, addGoal, showGoalsWindow, transitionToMovableWindow, startNewSession } =
     useSessionGoals()
   const [newGoal, setNewGoal] = useState('')
+  const { displayedNoteDaybook } = useNotesContext()
 
   useEffect(() => {
     if (!currentSession) {
-      startNewSession()
+      if (displayedNoteDaybook) {
+        startNewSession(displayedNoteDaybook.id)
+      }
     }
-  }, [])
+  }, [currentSession, displayedNoteDaybook, startNewSession])
 
   const handleAddGoal = (e: React.FormEvent): void => {
-    console.log('currentSession', currentSession)
-    console.log('currentSession.goals', currentSession?.goals)
-
     e.preventDefault()
     if (newGoal.trim()) {
       addGoal(newGoal.trim())

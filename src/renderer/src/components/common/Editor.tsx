@@ -34,8 +34,8 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
   const [previousContent, setPreviousContent] = useState('')
 
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const { toggleGoalStatus, currentSession, endCurrentSession } = useSessionGoals()
-  const { isBreak } = useTimer() // Add this line to get isBreak from TimeContext
+  const { currentSession, endCurrentSession } = useSessionGoals()
+  const { isBreak } = useTimer()
 
   useEffect(() => {
     return (): void => {
@@ -164,7 +164,7 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
         </div>{' '}
       </div>
       <div className="mb-4">
-        <CompletedSessionGoals />
+        {pad === 'daybook' && displayedNote && <CompletedSessionGoals noteId={displayedNote.id} />}
       </div>
       <div className="h-3/4 w-full" style={{ minHeight: '75%', height: 'auto' }}>
         {editor && pad === 'daybook' && <HighlightMenu editor={editor} />}

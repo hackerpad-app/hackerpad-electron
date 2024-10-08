@@ -4,14 +4,24 @@ import { useSessionGoals } from '../context/SessionGoalsContext'
 import { VscDebugStart, VscDebugStop } from 'react-icons/vsc'
 import { GrPowerReset } from 'react-icons/gr'
 import { useEffect } from 'react'
+import Note from '../../types/Note'
 
-const SessionTimer: React.FC = () => {
+interface SessionTimerProps {
+  pad: string
+  displayedNoteDaybook: Note | null
+  mostRecentDaybookNote: Note | null
+}
+
+const SessionTimer: React.FC<SessionTimerProps> = ({
+  pad,
+  displayedNoteDaybook,
+  mostRecentDaybookNote
+}) => {
   const {
     time,
     isBreak,
     sessionClockTicking,
     sessionInProgress,
-    sessionCompleted, // Add this new property
     startTimer,
     stopTimer,
     resetTimer
@@ -19,10 +29,14 @@ const SessionTimer: React.FC = () => {
 
   const { setShowGoalsWindow, setShowMovableGoalsWindow } = useSessionGoals()
 
+  const canStartTimer = pad === 'daybook' && displayedNoteDaybook?.id === mostRecentDaybookNote?.id
+
   const startSession = (): void => {
-    startTimer()
-    if (!isBreak) {
-      setShowGoalsWindow(true)
+    if (canStartTimer) {
+      startTimer()
+      if (!isBreak) {
+        setShowGoalsWindow(true)
+      }
     }
   }
 
@@ -38,8 +52,10 @@ const SessionTimer: React.FC = () => {
       <div className="flex items-center justify-center">
         <div className="flex space-x-2 p-2 rounded">
           <button
-            onClick={!sessionClockTicking ? startSession : undefined}
-            className={`cursor-pointer bg-transparent p-1 rounded ${sessionClockTicking ? 'text-gray-400' : 'hover:text-bright-green'}`}
+            onClick={!sessionClockTicking && canStartTimer ? startSession : undefined}
+            className={`cursor-pointer bg-transparent p-1 rounded ${
+              sessionClockTicking || !canStartTimer ? 'text-gray-400' : 'hover:text-bright-green'
+            }`}
           >
             <VscDebugStart style={{ fontSize: '24px' }} />
           </button>

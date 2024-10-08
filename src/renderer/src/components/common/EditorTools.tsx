@@ -8,7 +8,7 @@ interface ToolsProps {
   pad: string
 }
 
-const Tools = ({ pad }: ToolsProps) => {
+const Tools = ({ pad }: ToolsProps): React.ReactNode => {
   const { createNote, deleteNote, searchSidebarNotes } = useNotesContext()
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [headlineInput, setHeadlineInput] = useState('')

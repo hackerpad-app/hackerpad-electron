@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   PiCalendarCheckThin,
   PiPencilCircleThin,
@@ -69,7 +69,7 @@ const NoteItem = ({
     setDisplayedNote(note)
   }
 
-  const handlePinClick = (e: React.MouseEvent) => {
+  const handlePinClick = (e: React.MouseEvent): void => {
     e.stopPropagation()
     togglePinNote(pad, note.id)
   }
@@ -115,7 +115,7 @@ function NoteList({
 
   const displayName = pad === 'daybook' ? 'Daybook' : 'Notes'
 
-  const sortedNotes = (notes: Note[]) => {
+  const sortedNotes = (notes: Note[]): { pinnedNotes: Note[]; unpinnedNotes: Note[] } => {
     const pinnedNotes = notes
       .filter((note) => note.pinned)
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -193,7 +193,7 @@ const PadsPanel = ({
     fontSize: '30px'
   })
 
-  const handlePadChange = (newPad: string) => {
+  const handlePadChange = (newPad: string): void => {
     setPad(newPad)
     setSidebarSearchResults([])
     setSidebarSearchQuery('')
@@ -275,6 +275,14 @@ export default function Sidebar({ pad, setPad }: SidebarProps): JSX.Element {
 
   const { showGoalsWindow, showMovableGoalsWindow } = useSessionGoals()
 
+  const mostRecentDaybookNote = useMemo(() => {
+    return allNotesDaybook.reduce(
+      (latest, current) =>
+        new Date(current.created_at) > new Date(latest.created_at) ? current : latest,
+      allNotesDaybook[0]
+    )
+  }, [allNotesDaybook])
+
   return (
     <div className="relative w-screen h-screen bg-dark-green">
       <div className="absolute top-0 left-0 h-full flex justify-start items-start">
@@ -296,7 +304,11 @@ export default function Sidebar({ pad, setPad }: SidebarProps): JSX.Element {
           setDisplayedNote={setDisplayedNote}
           togglePinNote={togglePinNote}
         />
-        <SessionTimer />
+        <SessionTimer
+          pad={pad}
+          displayedNoteDaybook={displayedNoteDaybook}
+          mostRecentDaybookNote={mostRecentDaybookNote}
+        />
       </div>
       {showGoalsWindow && <SessionGoalsWindow />}
       {showMovableGoalsWindow && <MovableGoalsWindow />}
