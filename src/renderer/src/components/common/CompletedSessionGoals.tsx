@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useSessionGoals, Session } from './../context/SessionGoalsContext'
+import { GiDistraction } from 'react-icons/gi'
 
 const CompletedSessionGoals: React.FC = () => {
   const { completedSessions } = useSessionGoals()
@@ -85,14 +86,22 @@ const HoverInfo: React.FC<{ session: Session; position: { x: number; y: number }
 }) => {
   return (
     <div
-      className="fixed bg-macdonalds-shit text-white p-2 rounded shadow-lg w-64 z-50"
+      className="fixed bg-macdonalds-shit text-black p-3 rounded-lg shadow-lg w-64 z-50"
       style={{ left: `${position.x}px`, top: `${position.y}px` }}
     >
-      <h4 className="font-semibold mb-2">Tasks</h4>
+      <div className="flex justify-between items-center mb-2">
+        <h4 className="font-semibold">Tasks</h4>
+        {session.distractions.length > 0 && (
+          <div className="text-xs flex items-center">
+            <GiDistraction className="mr-1 text-bright-green" />
+            <span>{session.distractions.length} distractions</span>
+          </div>
+        )}
+      </div>
       <ul className="list-none text-sm max-h-40 overflow-y-auto pl-4">
         {session.goals.map((goal) => (
           <li key={goal.id} className="flex items-start mb-1 relative">
-            <span className="absolute left-[-1em] top-[0.4em] w-1.5 h-1.5 bg-white rounded-full"></span>
+            <span className="absolute left-[-1em] top-[0.4em] w-1.5 h-1.5 bg-black rounded-full"></span>
             <span className={`${goal.finished ? 'line-through' : ''} ml-2`}>{goal.text}</span>
           </li>
         ))}

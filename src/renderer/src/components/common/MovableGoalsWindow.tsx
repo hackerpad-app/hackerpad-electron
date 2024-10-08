@@ -67,7 +67,7 @@ const MovableGoalsWindow: React.FC = () => {
   const [distractions, setDistractions] = useState<string[]>([])
   const [currentDistraction, setCurrentDistraction] = useState('')
   const { time } = useTimer()
-  const { addGoal } = useSessionGoals()
+  const { addDistraction } = useSessionGoals()
   const nodeRef = useRef(null)
 
   const toggleSize = (): void => setIsLarge(!isLarge)
@@ -80,7 +80,7 @@ const MovableGoalsWindow: React.FC = () => {
     e.preventDefault()
     if (currentDistraction.trim()) {
       setDistractions([...distractions, currentDistraction.trim()])
-      addGoal(currentDistraction.trim())
+      addDistraction(currentDistraction.trim())
       setCurrentDistraction('')
     }
   }

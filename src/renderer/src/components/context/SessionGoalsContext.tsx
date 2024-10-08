@@ -11,6 +11,7 @@ export interface Goal {
 export interface Session {
   id: string
   goals: Goal[]
+  distractions: string[]  // Add this line
   startTime: number
   endTime: number | null
 }
@@ -27,6 +28,7 @@ interface SessionGoalsContextType {
   transitionToMovableWindow: () => void
   startNewSession: () => void
   endCurrentSession: () => void
+  addDistraction: (text: string) => void  // Add this line
 }
 
 const SessionGoalsContext = createContext<SessionGoalsContextType | undefined>(undefined)
@@ -64,6 +66,18 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
     [currentSession]
   )
 
+  const addDistraction = useCallback(
+    (text: string): void => {
+      if (currentSession) {
+        setCurrentSession((prevSession) => ({
+          ...prevSession!,
+          distractions: [...prevSession!.distractions, text]
+        }))
+      }
+    },
+    [currentSession]
+  )
+
   const transitionToMovableWindow = useCallback((): void => {
     setShowGoalsWindow(false)
     setShowMovableGoalsWindow(true)
@@ -73,6 +87,7 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
     const newSession: Session = {
       id: uuidv4(),
       goals: [],
+      distractions: [],  // Initialize distractions array
       startTime: Date.now(),
       endTime: null
     }
@@ -102,7 +117,8 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
         setShowMovableGoalsWindow,
         transitionToMovableWindow,
         startNewSession,
-        endCurrentSession
+        endCurrentSession,
+        addDistraction  // Add this line
       }}
     >
       {children}
