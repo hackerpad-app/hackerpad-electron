@@ -8,7 +8,7 @@ import { GiDistraction } from 'react-icons/gi'
 import { IoCheckmarkDoneCircleOutline, IoCheckmarkDoneCircleSharp } from 'react-icons/io5'
 
 const LargeGoalsView: React.FC<{ onShrink: () => void }> = ({ onShrink }) => {
-  const { goals, toggleGoalStatus } = useSessionGoals()
+  const { currentSession, toggleGoalStatus } = useSessionGoals()
 
   return (
     <div className="flex flex-row h-full">
@@ -23,46 +23,37 @@ const LargeGoalsView: React.FC<{ onShrink: () => void }> = ({ onShrink }) => {
       </div>
       <div className="flex-grow flex items-center justify-center">
         <div className="w-full max-h-full overflow-y-auto pr-2 py-2">
-          {goals.length === 0 ? (
+          {!currentSession || currentSession.goals.length === 0 ? (
             <p className="text-bright-green text-lg text-center">No goals added.</p>
           ) : (
             <div className="space-y-2">
-              {goals.map((goal, index) => {
-                const goalText =
-                  typeof goal === 'string'
-                    ? goal
-                    : typeof goal === 'object' && 'text' in goal
-                      ? goal.text
-                      : JSON.stringify(goal)
-
-                return (
-                  <div
-                    key={index}
-                    className="bg-macdonalds-shit bg-opacity-75 rounded-lg p-2 shadow-sm flex items-center justify-between w-full"
+              {currentSession.goals.map((goal) => (
+                <div
+                  key={goal.id}
+                  className="bg-macdonalds-shit bg-opacity-75 rounded-lg p-2 shadow-sm flex items-center justify-between w-full"
+                >
+                  <p
+                    className="text-black text-lg flex-grow"
+                    style={{
+                      textDecorationLine: goal.finished ? 'line-through' : 'none',
+                      textDecorationColor: 'currentColor',
+                      textDecorationThickness: '1px'
+                    }}
                   >
-                    <p
-                      className="text-black text-lg flex-grow"
-                      style={{
-                        textDecorationLine: goal.finished ? 'line-through' : 'none',
-                        textDecorationColor: 'currentColor',
-                        textDecorationThickness: '1px'
-                      }}
-                    >
-                      {goalText}
-                    </p>
-                    <button
-                      onClick={() => toggleGoalStatus(index)}
-                      className="ml-3 bg-transparent text-bright-green hover:text-green-600 transition-colors duration-200"
-                    >
-                      {goal.finished ? (
-                        <IoCheckmarkDoneCircleSharp size={24} />
-                      ) : (
-                        <IoCheckmarkDoneCircleOutline size={24} />
-                      )}
-                    </button>
-                  </div>
-                )
-              })}
+                    {goal.text}
+                  </p>
+                  <button
+                    onClick={() => toggleGoalStatus(goal.id)}
+                    className="ml-3 bg-transparent text-bright-green hover:text-green-600 transition-colors duration-200"
+                  >
+                    {goal.finished ? (
+                      <IoCheckmarkDoneCircleSharp size={24} />
+                    ) : (
+                      <IoCheckmarkDoneCircleOutline size={24} />
+                    )}
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>

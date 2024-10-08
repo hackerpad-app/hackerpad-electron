@@ -13,6 +13,7 @@ interface TimerContextType {
   sessionClockTicking: boolean
   sessionInProgress: boolean
   isBreak: boolean
+  sessionCompleted: boolean // Add this new property
   startTimer: () => void
   stopTimer: () => void
   resetTimer: () => void
@@ -36,6 +37,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [sessionClockTicking, setSessionClockTicking] = useState(false)
   const [sessionInProgress, setSessionInProgress] = useState(false)
   const [isBreak, setIsBreak] = useState(false)
+  const [sessionCompleted, setSessionCompleted] = useState(false) // Add this new state
   const intervalRef = useRef<number | null>(null)
 
   const startTimer = useCallback(() => {
@@ -50,6 +52,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const resetTimer = useCallback(() => {
     setSessionClockTicking(false)
     setSessionInProgress(false)
+    setSessionCompleted(false) // Reset sessionCompleted when timer is reset
     const newSessionSeconds = isBreak ? BREAK_SESSION_SECONDS : WORK_SESSION_SECONDS
     setTime({
       minutes: Math.floor(newSessionSeconds / 60),
@@ -67,6 +70,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             const newSessionSeconds = newIsBreak ? BREAK_SESSION_SECONDS : WORK_SESSION_SECONDS
             setIsBreak(newIsBreak)
             setSessionClockTicking(false)
+            if (!newIsBreak) {
+              setSessionCompleted(true)
+            }
             return {
               minutes: Math.floor(newSessionSeconds / 60),
               seconds: newSessionSeconds % 60
@@ -96,6 +102,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     sessionClockTicking,
     sessionInProgress,
     isBreak,
+    sessionCompleted, // Add this new property
     startTimer,
     stopTimer,
     resetTimer

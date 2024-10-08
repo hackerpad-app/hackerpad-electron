@@ -8,7 +8,10 @@ export default {
         'bright-green': '#1CF86E',
         'side-window-green': 'rgba(40, 40, 33, 0.75)',
         'session-goals-green': 'rgba(40, 40, 33, 1.0)',
-        'macdonalds-shit': 'rgba(102, 124, 88, 1)'
+        'macdonalds-shit': {
+          DEFAULT: 'rgba(102, 124, 88, 1)',
+          bright: 'rgba(102, 124, 88, 0.7)'
+        }
       },
       height: {
         '1/20': '5%',

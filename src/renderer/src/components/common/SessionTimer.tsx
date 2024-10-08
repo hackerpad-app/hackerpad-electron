@@ -11,6 +11,7 @@ const SessionTimer: React.FC = () => {
     isBreak,
     sessionClockTicking,
     sessionInProgress,
+    sessionCompleted, // Add this new property
     startTimer,
     stopTimer,
     resetTimer
@@ -18,12 +19,13 @@ const SessionTimer: React.FC = () => {
 
   const { setShowGoalsWindow, setShowMovableGoalsWindow } = useSessionGoals()
 
-  const startSession = () => {
+  const startSession = (): void => {
     startTimer()
     if (!isBreak) {
       setShowGoalsWindow(true)
     }
   }
+
   useEffect(() => {
     if (!sessionClockTicking) {
       setShowGoalsWindow(false)

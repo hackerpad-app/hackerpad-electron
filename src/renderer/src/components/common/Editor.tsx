@@ -1,6 +1,8 @@
 import { useRef, useEffect, useState } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { useNotesContext } from './../context/NotesContext'
+import { useSessionGoals } from './../context/SessionGoalsContext'
+import { useTimer } from './../context/TimeContext' // Add this import
 import Highlight from '@tiptap/extension-highlight'
 import Typography from '@tiptap/extension-typography'
 import StarterKit from '@tiptap/starter-kit'
@@ -12,12 +14,13 @@ import Tools from './EditorTools'
 import HighlightMenu from './HighlightMenu'
 import BulletList from '@tiptap/extension-bullet-list'
 import ListItem from '@tiptap/extension-list-item'
+import CompletedSessionGoals from './CompletedSessionGoals'
 
 interface EditorProps {
   pad: string
 }
 
-export default function Editor({ pad }: EditorProps) {
+export default function Editor({ pad }: EditorProps): React.ReactElement {
   const {
     displayedNoteDaybook,
     displayedNoteNotes,
@@ -31,9 +34,11 @@ export default function Editor({ pad }: EditorProps) {
   const [previousContent, setPreviousContent] = useState('')
 
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const { toggleGoalStatus, currentSession, endCurrentSession } = useSessionGoals()
+  const { isBreak } = useTimer() // Add this line to get isBreak from TimeContext
 
   useEffect(() => {
-    return () => {
+    return (): void => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current)
       }
@@ -104,7 +109,13 @@ export default function Editor({ pad }: EditorProps) {
     }
   })
 
-  const triggerConfetti = () => {
+  useEffect(() => {
+    if (isBreak && currentSession) {
+      endCurrentSession()
+    }
+  }, [isBreak, currentSession, endCurrentSession])
+
+  const triggerConfetti = (): void => {
     confetti({
       particleCount: 100,
       spread: 70,
@@ -132,7 +143,7 @@ export default function Editor({ pad }: EditorProps) {
 
   return (
     <div className="bg-dark-green relative h-screen w-full pr-5">
-      <div className="relative ">
+      <div className="relative">
         <Tools pad={pad} />
       </div>
       <div className="flex pb-3 items-center justify-between border border-green-900 rounded-lg">
@@ -152,8 +163,11 @@ export default function Editor({ pad }: EditorProps) {
             : ''}
         </div>{' '}
       </div>
+      <div className="mb-4">
+        <CompletedSessionGoals />
+      </div>
       <div className="h-3/4 w-full" style={{ minHeight: '75%', height: 'auto' }}>
-        {editor && pad === 'daybook' && <HighlightMenu editor={editor}></HighlightMenu>}{' '}
+        {editor && pad === 'daybook' && <HighlightMenu editor={editor} />}
         <EditorContent editor={editor} />
       </div>
     </div>

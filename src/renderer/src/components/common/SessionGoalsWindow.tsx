@@ -1,12 +1,22 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSessionGoals } from '../context/SessionGoalsContext'
 import { FaPlay } from 'react-icons/fa'
 
 const SessionGoalsWindow: React.FC = () => {
-  const { goals, addGoal, showGoalsWindow, transitionToMovableWindow } = useSessionGoals()
+  const { currentSession, addGoal, showGoalsWindow, transitionToMovableWindow, startNewSession } =
+    useSessionGoals()
   const [newGoal, setNewGoal] = useState('')
 
+  useEffect(() => {
+    if (!currentSession) {
+      startNewSession()
+    }
+  }, [])
+
   const handleAddGoal = (e: React.FormEvent): void => {
+    console.log('currentSession', currentSession)
+    console.log('currentSession.goals', currentSession?.goals)
+
     e.preventDefault()
     if (newGoal.trim()) {
       addGoal(newGoal.trim())
@@ -38,13 +48,13 @@ const SessionGoalsWindow: React.FC = () => {
             className="w-full p-2 text-lg rounded bg-white bg-opacity-5"
           />
         </form>
-        {goals.length > 0 && (
+        {currentSession && currentSession.goals.length > 0 && (
           <>
             <div className="mx-4 border-t border-gray-300"></div>
             <ul className="p-4 space-y-2 max-h-60 overflow-y-auto">
-              {goals.map((goal, index) => (
-                <li key={index} className="bg-macdonalds-shit text-black p-2 rounded">
-                  {typeof goal === 'string' ? goal : goal.text}
+              {currentSession.goals.map((goal) => (
+                <li key={goal.id} className="bg-macdonalds-shit text-black p-2 rounded">
+                  {goal.text}
                 </li>
               ))}
             </ul>
