@@ -10,8 +10,8 @@
   line-height: 1.4;
   font-weight: 400;
 
-  color: #8a4949;
-  background-color: #5c3d3d;
+  color: black;
+  background-color: black;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -23,7 +23,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     color: #f6f6f6;
-    background-color: #4b2424; /* Changed from #0c0e09 to a lighter shade */
+    background-color: black; /* Changed from #0c0e09 to a lighter shade */
   }
 
   a:hover {
