@@ -6,6 +6,7 @@ interface Note {
   content: string
   pad: string
   pinned: boolean
+  is_day_finished: boolean
 }
 
 export default Note

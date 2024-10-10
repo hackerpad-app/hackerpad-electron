@@ -1,7 +1,37 @@
 import { useState, useEffect } from 'react'
 import Note from './../types/Note'
 
-export default function useNotes(pad: string) {
+interface UseNotesReturn {
+  createNote: (pad: string, headline?: string) => void
+  deleteNote: (pad: string) => void
+  updateNote: (
+    pad: string,
+    id: string,
+    headline: string,
+    content: string,
+    pinned: boolean,
+    is_day_finished: boolean
+  ) => void
+  searchNotes: (query: string, pad: string) => Note[]
+  allNotesDaybook: Note[]
+  allNotesNotes: Note[]
+  displayedNoteDaybook: Note | null
+  displayedNoteNotes: Note | null
+  setDisplayedNoteDaybook: React.Dispatch<React.SetStateAction<Note | null>>
+  setDisplayedNoteNotes: React.Dispatch<React.SetStateAction<Note | null>>
+  sidebarSearchQuery: string
+  setSidebarSearchQuery: React.Dispatch<React.SetStateAction<string>>
+  setSidebarSearchResults: React.Dispatch<React.SetStateAction<Note[]>>
+  sidebarSearchResults: Note[]
+  searchSidebarNotes: (query: string) => void
+  editorSearchQuery: string
+  setEditorSearchQuery: React.Dispatch<React.SetStateAction<string>>
+  editorSearchResults: Note[]
+  searchEditorNotes: (query: string) => void
+  togglePinNote: (pad: string, id: string) => void
+}
+
+export default function useNotes(pad: string): UseNotesReturn {
   const [allNotesDaybook, setAllNotesDaybook] = useState<Note[]>([])
   const [allNotesNotes, setAllNotesNotes] = useState<Note[]>([])
 
@@ -25,7 +55,8 @@ export default function useNotes(pad: string) {
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     pad,
-    pinned: false
+    pinned: false,
+    is_day_finished: false
   })
 
   const daybookTemplate = {
@@ -35,7 +66,8 @@ export default function useNotes(pad: string) {
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     pad: 'daybook',
-    pinned: false
+    pinned: false,
+    is_day_finished: false
   }
 
   const notesTemplate = {
@@ -44,10 +76,11 @@ export default function useNotes(pad: string) {
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     pad: 'notes',
-    pinned: false
+    pinned: false,
+    is_day_finished: false
   }
 
-  const searchNotes = (query: string, pad: string) => {
+  const searchNotes = (query: string, pad: string): Note[] => {
     console.log('pad', pad)
     const allNotes = pad === 'daybook' ? allNotesDaybook : allNotesNotes
     return allNotes.filter(
@@ -57,7 +90,7 @@ export default function useNotes(pad: string) {
     )
   }
 
-  const searchSidebarNotes = (query: string) => {
+  const searchSidebarNotes = (query: string): void => {
     console.log('searching sidebar notes', query)
     const results = searchNotes(query, pad)
     setSidebarSearchResults(results)
@@ -71,19 +104,20 @@ export default function useNotes(pad: string) {
     }
   }
 
-  const searchEditorNotes = (query: string) => {
+  const searchEditorNotes = (query: string): void => {
     console.log('searching editor notes', query)
     const results = searchNotes(query, 'notes') // Always search in 'notes' for editor
     setEditorSearchResults(results)
     console.log('editorSearchResults usenotes', editorSearchResults)
   }
 
-  const createNote = (pad: string, headline: string = '') => {
+  const createNote = (pad: string, headline: string = ''): void => {
     const newNote: Note =
       pad === 'daybook'
         ? { ...daybookTemplate, id: `note_${Date.now()}` }
         : { ...notesTemplate, headline, id: `note_${Date.now()}` }
 
+    console.log('newNote', newNote)
     const storedNotes = localStorage.getItem(`notes_${pad}`)
     const NotesArray = storedNotes ? JSON.parse(storedNotes) : []
     NotesArray.unshift(newNote) // Add new note to the top of the array
@@ -91,24 +125,32 @@ export default function useNotes(pad: string) {
     readNotes(pad)
   }
 
-  const readNotes = (pad: string) => {
+  const readNotes = (pad: string): void => {
     const storedNotes = localStorage.getItem(`notes_${pad}`)
     const NotesArray = storedNotes ? JSON.parse(storedNotes) : []
     handleNotesArray(pad, NotesArray)
   }
 
   const updateNote = (
-    pad: string,
     id: string,
+    pad: string,
     headline: string,
     content: string,
-    pinned: boolean
-  ) => {
+    pinned: boolean,
+    is_day_finished: boolean
+  ): void => {
     const storedNotes = localStorage.getItem(`notes_${pad}`)
-    let NotesArray = storedNotes ? JSON.parse(storedNotes) : []
+    const NotesArray = storedNotes ? JSON.parse(storedNotes) : []
     const updatedNotes = NotesArray.map((note: Note) =>
       note.id === id
-        ? { ...note, headline, content, updated_at: new Date().toISOString(), pinned }
+        ? {
+            ...note,
+            headline,
+            content,
+            updated_at: new Date().toISOString(),
+            pinned,
+            is_day_finished
+          }
         : note
     )
     localStorage.setItem(`notes_${pad}`, JSON.stringify(updatedNotes))
@@ -120,9 +162,21 @@ export default function useNotes(pad: string) {
     }
   }
 
-  const togglePinNote = (pad: string, id: string) => {
+  const deleteNote = (pad: string): void => {
+    console.log('Deleting a note')
+    const displayed = pad === 'daybook' ? displayedNoteDaybook : displayedNoteNotes
+    if (displayed === null) return
+
     const storedNotes = localStorage.getItem(`notes_${pad}`)
     let NotesArray = storedNotes ? JSON.parse(storedNotes) : []
+    NotesArray = NotesArray.filter((note: Note) => note.id !== displayed.id)
+    localStorage.setItem(`notes_${pad}`, JSON.stringify(NotesArray))
+    readNotes(pad)
+  }
+
+  const togglePinNote = (pad: string, id: string): void => {
+    const storedNotes = localStorage.getItem(`notes_${pad}`)
+    const NotesArray = storedNotes ? JSON.parse(storedNotes) : []
     const updatedNotes = NotesArray.map((note: Note) =>
       note.id === id ? { ...note, pinned: !note.pinned } : note
     )
@@ -135,19 +189,7 @@ export default function useNotes(pad: string) {
     }
   }
 
-  const deleteNote = (pad: string) => {
-    console.log('Deleting a note')
-    const displayed = pad === 'daybook' ? displayedNoteDaybook : displayedNoteNotes
-    if (displayed === null) return
-
-    const storedNotes = localStorage.getItem(`notes_${pad}`)
-    let NotesArray = storedNotes ? JSON.parse(storedNotes) : []
-    NotesArray = NotesArray.filter((note: Note) => note.id !== displayed.id)
-    localStorage.setItem(`notes_${pad}`, JSON.stringify(NotesArray))
-    readNotes(pad)
-  }
-
-  const handleNotesArray = (pad: string, NotesArray: Note[]) => {
+  const handleNotesArray = (pad: string, NotesArray: Note[]): void => {
     const setNote = pad === 'daybook' ? setDisplayedNoteDaybook : setDisplayedNoteNotes
     const setAllNotes = pad === 'daybook' ? setAllNotesDaybook : setAllNotesNotes
 
