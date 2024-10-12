@@ -11,17 +11,20 @@ interface NotesContextType {
   setSidebarSearchResults: React.Dispatch<React.SetStateAction<Note[]>>
   sidebarSearchResults: Note[]
   searchSidebarNotes: (query: string) => void
-  editorSearchQuery: string
   setEditorSearchQuery: React.Dispatch<React.SetStateAction<string>>
   editorSearchResults: Note[]
   searchEditorNotes: (query: string) => void
   allNotesDaybook: Note[]
   allNotesNotes: Note[]
+  setAllNotesDaybook: React.Dispatch<React.SetStateAction<Note[]>>
+  setAllNotesNotes: React.Dispatch<React.SetStateAction<Note[]>>
   displayedNoteDaybook: Note | null
   displayedNoteNotes: Note | null
   setDisplayedNoteDaybook: React.Dispatch<React.SetStateAction<Note | null>>
   setDisplayedNoteNotes: React.Dispatch<React.SetStateAction<Note | null>>
   togglePinNote: (pad: string, id: string) => void
+  isCurrentDaybookFinished: boolean
+  setIsCurrentDaybookFinished: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined)
@@ -35,7 +38,7 @@ export const NotesProvider: React.FC<{ children: ReactNode; pad: string }> = ({
   return <NotesContext.Provider value={notesData}>{children}</NotesContext.Provider>
 }
 
-export const useNotesContext = () => {
+export const useNotesContext = (): NotesContextType => {
   const context = useContext(NotesContext)
   if (context === undefined) {
     throw new Error('useNotesContext must be used within a NotesProvider')

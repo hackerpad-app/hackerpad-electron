@@ -20,6 +20,7 @@ export interface Session {
   endTime: string | null
   goals: Goal[]
   distractions: Distraction[]
+  daySummary?: string
 }
 
 interface SessionGoalsContextType {
@@ -34,7 +35,8 @@ interface SessionGoalsContextType {
   transitionToMovableWindow: () => void
   startNewSession: (noteId: string) => void
   endCurrentSession: () => void
-  addDistraction: (text: string) => void 
+  addDistraction: (text: string) => void
+  setDaySummary: (summary: string) => void
 }
 
 const SessionGoalsContext = createContext<SessionGoalsContextType | undefined>(undefined)
@@ -117,6 +119,17 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
   }, [currentSession])
 
+  const setDaySummary = useCallback((summary: string): void => {
+    setCompletedSessions((prevSessions) => {
+      const lastSession = prevSessions[prevSessions.length - 1]
+      if (lastSession) {
+        const updatedSession = { ...lastSession, daySummary: summary }
+        return [...prevSessions.slice(0, -1), updatedSession]
+      }
+      return prevSessions
+    })
+  }, [])
+
   return (
     <SessionGoalsContext.Provider
       value={{
@@ -131,7 +144,8 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
         transitionToMovableWindow,
         startNewSession,
         endCurrentSession,
-        addDistraction
+        addDistraction,
+        setDaySummary
       }}
     >
       {children}

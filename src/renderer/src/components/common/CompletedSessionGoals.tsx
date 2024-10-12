@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useSessionGoals, Session } from './../context/SessionGoalsContext'
 import { GiDistraction } from 'react-icons/gi'
+import { FaInfoCircle } from 'react-icons/fa'
 
 interface CompletedSessionGoalsProps {
   noteId: string
@@ -9,14 +10,10 @@ interface CompletedSessionGoalsProps {
 
 const CompletedSessionGoals: React.FC<CompletedSessionGoalsProps> = ({ noteId }) => {
   const { completedSessions } = useSessionGoals()
-  const [hoveredSession, setHoveredSession] = useState<Session | null>(null)
+  const [hoveredItem, setHoveredItem] = useState<Session | 'summary' | null>(null)
   const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 })
 
   const filteredSessions = completedSessions.filter((session) => session.noteId === noteId)
-
-  if (filteredSessions.length === 0) {
-    return null
-  }
 
   const totalCompletedGoals = filteredSessions.reduce(
     (total, session) => total + session.goals.filter((goal) => goal.finished).length,
@@ -24,9 +21,11 @@ const CompletedSessionGoals: React.FC<CompletedSessionGoalsProps> = ({ noteId })
   )
   const totalGoals = filteredSessions.reduce((total, session) => total + session.goals.length, 0)
 
-  console.log('completedSessionsGoals rendered')
   const finishRate = totalGoals > 0 ? (totalCompletedGoals / totalGoals) * 100 : 0
   const formattedFinishRate = finishRate.toFixed(1)
+
+  const lastSession = filteredSessions[filteredSessions.length - 1]
+  const daySummary = lastSession?.daySummary
 
   return (
     <>
@@ -36,19 +35,33 @@ const CompletedSessionGoals: React.FC<CompletedSessionGoalsProps> = ({ noteId })
             key={session.id}
             session={session}
             onHover={(session, x, y) => {
-              setHoveredSession(session)
+              setHoveredItem(session)
               setHoverPosition({ x, y })
             }}
-            onLeave={() => setHoveredSession(null)}
+            onLeave={() => setHoveredItem(null)}
           />
         ))}
+
         <div className="text-opacity-75 text-sm text-white">
           <span className="ml-2">{formattedFinishRate}% tasks finished </span>
         </div>
+        {daySummary && (
+          <SummaryPin
+            onHover={(x, y) => {
+              setHoveredItem('summary')
+              setHoverPosition({ x, y })
+            }}
+            onLeave={() => setHoveredItem(null)}
+          />
+        )}
       </div>
-      {hoveredSession &&
+      {hoveredItem &&
         createPortal(
-          <HoverInfo session={hoveredSession} position={hoverPosition} />,
+          hoveredItem === 'summary' ? (
+            <SummaryHoverInfo summary={daySummary!} position={hoverPosition} />
+          ) : (
+            <HoverInfo session={hoveredItem} position={hoverPosition} />
+          ),
           document.body
         )}
     </>
@@ -83,6 +96,47 @@ const SessionPin: React.FC<{
       onMouseLeave={onLeave}
     >
       {formatTime(startTime)}-{formatTime(endTime)}
+    </div>
+  )
+}
+
+const SummaryPin: React.FC<{
+  onHover: (x: number, y: number) => void
+  onLeave: () => void
+}> = ({ onHover, onLeave }) => {
+  const pinRef = useRef<HTMLDivElement>(null)
+
+  const handleMouseEnter = (): void => {
+    if (pinRef.current) {
+      const rect = pinRef.current.getBoundingClientRect()
+      onHover(rect.left + 40, rect.bottom + 10)
+    }
+  }
+
+  return (
+    <div
+      ref={pinRef}
+      className="bg-bright-green text-black text-xs px-4 py-4 rounded-xl cursor-pointer hover:bg-green-400 transition-colors duration-200 flex items-center"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={onLeave}
+    >
+      <FaInfoCircle className="mr-2" />
+      Summary
+    </div>
+  )
+}
+
+const SummaryHoverInfo: React.FC<{ summary: string; position: { x: number; y: number } }> = ({
+  summary,
+  position
+}) => {
+  return (
+    <div
+      className="fixed bg-bright-green text-black p-3 rounded-lg shadow-lg w-64 z-50"
+      style={{ left: `${position.x}px`, top: `${position.y}px` }}
+    >
+      <h4 className="font-semibold mb-2">Day Summary</h4>
+      <p className="text-sm">{summary}</p>
     </div>
   )
 }

@@ -3,15 +3,21 @@ import { PiNotePencilLight } from 'react-icons/pi'
 import { AiOutlineDelete } from 'react-icons/ai'
 import { useNotesContext } from './../context/NotesContext'
 import { FaSearch } from 'react-icons/fa'
+import { FaCheck } from 'react-icons/fa'
+import DaybookSummaryModal from './DaybookSummaryModal'
+import { useSessionGoals } from '../context/SessionGoalsContext'
 
 interface ToolsProps {
   pad: string
 }
 
 const Tools = ({ pad }: ToolsProps): React.ReactNode => {
-  const { createNote, deleteNote, searchSidebarNotes } = useNotesContext()
+  const { createNote, deleteNote, searchSidebarNotes, displayedNoteDaybook } = useNotesContext()
+
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [headlineInput, setHeadlineInput] = useState('')
+  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false)
+  const { setDaySummary } = useSessionGoals()
 
   const handleCreateNote = (): void => {
     if (pad === 'notes') {
@@ -32,6 +38,16 @@ const Tools = ({ pad }: ToolsProps): React.ReactNode => {
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     searchSidebarNotes(event.target.value)
+  }
+
+  const handleFinishDaybook = (): void => {
+    if (displayedNoteDaybook) {
+      setIsSummaryModalOpen(true)
+    }
+  }
+
+  const handleSaveSummary = (summary: string): void => {
+    setDaySummary(summary)
   }
 
   return (
@@ -66,16 +82,30 @@ const Tools = ({ pad }: ToolsProps): React.ReactNode => {
             </div>
           </button>
         </div>
-        <div className="flex items-center relative">
-          <input
-            type="text"
-            placeholder="Search..."
-            onChange={handleSearchChange}
-            className="bg-transparent rounded-md text-gray-300 pl-8 pr-3 py-1 mr-2 ring-gray-300 ring-1 focus:outline-none w-64"
-          />
-          <FaSearch className="absolute left-2 text-gray-300" />
+        <div className="flex flex-row">
+          <button
+            onClick={handleFinishDaybook}
+            className="bg-transparent text-bright-green mr-2"
+            title="Mark daybook as finished"
+          >
+            <FaCheck size={20} />
+          </button>
+          <div className="flex items-center relative">
+            <input
+              type="text"
+              placeholder="Search..."
+              onChange={handleSearchChange}
+              className="bg-transparent rounded-md text-gray-300 pl-8 pr-3 py-1 mr-2 ring-gray-300 ring-1 focus:outline-none w-64"
+            />
+            <FaSearch className="absolute left-2 text-gray-300" />
+          </div>
         </div>
       </div>
+      <DaybookSummaryModal
+        isOpen={isSummaryModalOpen}
+        onClose={() => setIsSummaryModalOpen(false)}
+        onSave={handleSaveSummary}
+      />
     </div>
   )
 }

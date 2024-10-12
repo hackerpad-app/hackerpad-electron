@@ -22,7 +22,13 @@ interface NoteListProps {
   pad: string
   searchResults: Note[]
   allNotes: Note[]
-  updateNote: (pad: string, id: string, headline: string, content: string, pinned: boolean) => void
+  updateNote: (
+    id: string,
+    pad: string,
+    headline: string,
+    content: string,
+    pinned: boolean,
+  ) => void
   displayedNote: Note | null
   setDisplayedNote: React.Dispatch<React.SetStateAction<Note | null>>
   togglePinNote: (pad: string, id: string) => void
@@ -32,7 +38,13 @@ interface NoteItemProps {
   pad: string
   note: Note
   isSelected: boolean
-  updateNote: (pad: string, id: string, headline: string, content: string, pinned: boolean) => void
+  updateNote: (
+    id: string,
+    pad: string,
+    headline: string,
+    content: string,
+    pinned: boolean,
+  ) => void
   displayedNote: Note | null
   setDisplayedNote: React.Dispatch<React.SetStateAction<Note | null>>
   handleSelectNote: (note: Note) => void
@@ -58,11 +70,11 @@ const NoteItem = ({
   const handleClick = async (): Promise<void> => {
     if (displayedNote && displayedNote.id !== note.id) {
       await updateNote(
-        pad,
         displayedNote.id,
+        displayedNote.pad,
         displayedNote.headline,
         displayedNote.content,
-        displayedNote.pinned
+        displayedNote.pinned,
       )
     }
     handleSelectNote(note)

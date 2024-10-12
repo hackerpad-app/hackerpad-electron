@@ -58,10 +58,10 @@ const HighlightMenu = ({ editor }: HighlightMenuProps) => {
 
       editor.commands.setMark('highlight', { color: '#2d2d1f' })
 
-      let newContent = `${note.content.trimEnd()}<br>${highlightedText}${dateTimeTag}`
+      const newContent = `${note.content.trimEnd()}<br>${highlightedText}${dateTimeTag}`
 
       try {
-        updateNote('notes', note.id, note.headline, newContent)
+        updateNote('notes', note.id, note.headline, newContent, note.pinned)
       } catch (error) {
         console.error('Error updating note:', error)
       }

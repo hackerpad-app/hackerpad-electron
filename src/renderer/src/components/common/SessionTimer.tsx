@@ -1,10 +1,11 @@
 import * as React from 'react'
 import { useTimer } from '../context/TimeContext'
-import { useSessionGoals } from '../context/SessionGoalsContext'
 import { VscDebugStart, VscDebugStop } from 'react-icons/vsc'
 import { GrPowerReset } from 'react-icons/gr'
 import { useEffect } from 'react'
 import Note from '../../types/Note'
+import { useNotesContext } from '../context/NotesContext'
+import { useSessionGoals } from '../context/SessionGoalsContext'
 
 interface SessionTimerProps {
   pad: string
@@ -28,8 +29,12 @@ const SessionTimer: React.FC<SessionTimerProps> = ({
   } = useTimer()
 
   const { setShowGoalsWindow, setShowMovableGoalsWindow } = useSessionGoals()
+  const { isCurrentDaybookFinished } = useNotesContext()
 
-  const canStartTimer = pad === 'daybook' && displayedNoteDaybook?.id === mostRecentDaybookNote?.id
+  const canStartTimer =
+    pad === 'daybook' &&
+    displayedNoteDaybook?.id === mostRecentDaybookNote?.id &&
+    !isCurrentDaybookFinished
 
   const startSession = (): void => {
     if (canStartTimer) {
@@ -47,6 +52,8 @@ const SessionTimer: React.FC<SessionTimerProps> = ({
     }
   }, [sessionClockTicking])
 
+  const isButtonDisabled = !canStartTimer || isCurrentDaybookFinished
+
   return (
     <div className="p-5 mt-5 flex flex-row items-center justify-center space-x-4 rounded-md border-2 border-bright-green">
       <div className="flex items-center justify-center">
@@ -54,20 +61,31 @@ const SessionTimer: React.FC<SessionTimerProps> = ({
           <button
             onClick={!sessionClockTicking && canStartTimer ? startSession : undefined}
             className={`cursor-pointer bg-transparent p-1 rounded ${
-              sessionClockTicking || !canStartTimer ? 'text-gray-400' : 'hover:text-bright-green'
+              isButtonDisabled ? 'text-gray-400 cursor-not-allowed' : 'hover:text-bright-green'
             }`}
+            disabled={isButtonDisabled}
           >
             <VscDebugStart style={{ fontSize: '24px' }} />
           </button>
           <button
-            onClick={sessionClockTicking ? stopTimer : undefined}
-            className={`cursor-pointer bg-transparent p-1 rounded ${!sessionClockTicking ? 'text-gray-400' : 'hover:text-bright-green'}`}
+            onClick={sessionClockTicking && !isButtonDisabled ? stopTimer : undefined}
+            className={`cursor-pointer bg-transparent p-1 rounded ${
+              !sessionClockTicking || isButtonDisabled
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'hover:text-bright-green'
+            }`}
+            disabled={!sessionClockTicking || isButtonDisabled}
           >
             <VscDebugStop style={{ fontSize: '24px' }} />
           </button>
           <button
-            onClick={sessionInProgress ? resetTimer : undefined}
-            className={`cursor-pointer bg-transparent p-1 rounded ${!sessionInProgress ? 'text-gray-400' : 'hover:text-bright-green'}`}
+            onClick={sessionInProgress && !isButtonDisabled ? resetTimer : undefined}
+            className={`cursor-pointer bg-transparent p-1 rounded ${
+              !sessionInProgress || isButtonDisabled
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'hover:text-bright-green'
+            }`}
+            disabled={!sessionInProgress || isButtonDisabled}
           >
             <GrPowerReset style={{ fontSize: '24px' }} />
           </button>

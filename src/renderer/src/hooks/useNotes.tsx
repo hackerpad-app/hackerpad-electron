@@ -4,14 +4,7 @@ import Note from './../types/Note'
 interface UseNotesReturn {
   createNote: (pad: string, headline?: string) => void
   deleteNote: (pad: string) => void
-  updateNote: (
-    pad: string,
-    id: string,
-    headline: string,
-    content: string,
-    pinned: boolean,
-    is_day_finished: boolean
-  ) => void
+  updateNote: (pad: string, id: string, headline: string, content: string, pinned: boolean) => void
   searchNotes: (query: string, pad: string) => Note[]
   allNotesDaybook: Note[]
   allNotesNotes: Note[]
@@ -29,6 +22,8 @@ interface UseNotesReturn {
   editorSearchResults: Note[]
   searchEditorNotes: (query: string) => void
   togglePinNote: (pad: string, id: string) => void
+  isCurrentDaybookFinished: boolean
+  setIsCurrentDaybookFinished: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export default function useNotes(pad: string): UseNotesReturn {
@@ -43,6 +38,8 @@ export default function useNotes(pad: string): UseNotesReturn {
   const [editorSearchQuery, setEditorSearchQuery] = useState('')
   const [editorSearchResults, setEditorSearchResults] = useState<Note[]>([])
 
+  const [isCurrentDaybookFinished, setIsCurrentDaybookFinished] = useState(false)
+
   useEffect(() => {
     readNotes('daybook')
     readNotes('notes')
@@ -55,8 +52,7 @@ export default function useNotes(pad: string): UseNotesReturn {
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     pad,
-    pinned: false,
-    is_day_finished: false
+    pinned: false
   })
 
   const daybookTemplate = {
@@ -66,8 +62,7 @@ export default function useNotes(pad: string): UseNotesReturn {
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     pad: 'daybook',
-    pinned: false,
-    is_day_finished: false
+    pinned: false
   }
 
   const notesTemplate = {
@@ -76,8 +71,7 @@ export default function useNotes(pad: string): UseNotesReturn {
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     pad: 'notes',
-    pinned: false,
-    is_day_finished: false
+    pinned: false
   }
 
   const searchNotes = (query: string, pad: string): Note[] => {
@@ -122,6 +116,9 @@ export default function useNotes(pad: string): UseNotesReturn {
     const NotesArray = storedNotes ? JSON.parse(storedNotes) : []
     NotesArray.unshift(newNote) // Add new note to the top of the array
     localStorage.setItem(`notes_${pad}`, JSON.stringify(NotesArray))
+    if (pad === 'daybook') {
+      setIsCurrentDaybookFinished(false)
+    }
     readNotes(pad)
   }
 
@@ -136,8 +133,7 @@ export default function useNotes(pad: string): UseNotesReturn {
     pad: string,
     headline: string,
     content: string,
-    pinned: boolean,
-    is_day_finished: boolean
+    pinned: boolean
   ): void => {
     const storedNotes = localStorage.getItem(`notes_${pad}`)
     const NotesArray = storedNotes ? JSON.parse(storedNotes) : []
@@ -148,8 +144,7 @@ export default function useNotes(pad: string): UseNotesReturn {
             headline,
             content,
             updated_at: new Date().toISOString(),
-            pinned,
-            is_day_finished
+            pinned
           }
         : note
     )
@@ -221,6 +216,8 @@ export default function useNotes(pad: string): UseNotesReturn {
     setEditorSearchQuery,
     editorSearchResults,
     searchEditorNotes,
-    togglePinNote
+    togglePinNote,
+    isCurrentDaybookFinished,
+    setIsCurrentDaybookFinished
   }
 }
