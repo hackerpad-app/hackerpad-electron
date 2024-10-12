@@ -1,10 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import {
-  PiCalendarCheckThin,
-  PiPencilCircleThin,
-  PiPushPinThin,
-  PiPushPinFill
-} from 'react-icons/pi'
+import { PiCalendarThin, PiPencilCircleThin, PiPushPinThin, PiPushPinFill } from 'react-icons/pi'
 
 import { useNotesContext } from '../context/NotesContext'
 import Note from '../../types/Note'
@@ -22,13 +17,7 @@ interface NoteListProps {
   pad: string
   searchResults: Note[]
   allNotes: Note[]
-  updateNote: (
-    id: string,
-    pad: string,
-    headline: string,
-    content: string,
-    pinned: boolean,
-  ) => void
+  updateNote: (id: string, pad: string, headline: string, content: string, pinned: boolean) => void
   displayedNote: Note | null
   setDisplayedNote: React.Dispatch<React.SetStateAction<Note | null>>
   togglePinNote: (pad: string, id: string) => void
@@ -38,13 +27,7 @@ interface NoteItemProps {
   pad: string
   note: Note
   isSelected: boolean
-  updateNote: (
-    id: string,
-    pad: string,
-    headline: string,
-    content: string,
-    pinned: boolean,
-  ) => void
+  updateNote: (id: string, pad: string, headline: string, content: string, pinned: boolean) => void
   displayedNote: Note | null
   setDisplayedNote: React.Dispatch<React.SetStateAction<Note | null>>
   handleSelectNote: (note: Note) => void
@@ -74,7 +57,7 @@ const NoteItem = ({
         displayedNote.pad,
         displayedNote.headline,
         displayedNote.content,
-        displayedNote.pinned,
+        displayedNote.pinned
       )
     }
     handleSelectNote(note)
@@ -239,7 +222,7 @@ const PadsPanel = ({
           className="py-4"
           style={getActiveStyle('daybook')}
         >
-          <PiCalendarCheckThin />
+          <PiCalendarThin />
         </div>
         <div
           onClick={() => handlePadChange('notes')}

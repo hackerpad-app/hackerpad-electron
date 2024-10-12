@@ -3,9 +3,10 @@ import { PiNotePencilLight } from 'react-icons/pi'
 import { AiOutlineDelete } from 'react-icons/ai'
 import { useNotesContext } from './../context/NotesContext'
 import { FaSearch } from 'react-icons/fa'
-import { FaCheck } from 'react-icons/fa'
+
 import DaybookSummaryModal from './DaybookSummaryModal'
 import { useSessionGoals } from '../context/SessionGoalsContext'
+import { PiCalendarCheckThin } from 'react-icons/pi'
 
 interface ToolsProps {
   pad: string
@@ -88,7 +89,9 @@ const Tools = ({ pad }: ToolsProps): React.ReactNode => {
             className="bg-transparent text-bright-green mr-2"
             title="Mark daybook as finished"
           >
-            <FaCheck size={20} />
+            <div className="flex items-center" style={{ fontSize: '2.3rem' }}>
+              <PiCalendarCheckThin />
+            </div>
           </button>
           <div className="flex items-center relative">
             <input
