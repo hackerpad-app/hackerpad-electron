@@ -9,28 +9,28 @@ interface HighlightMenuProps {
   editor: Editor
 }
 
-const HighlightMenu = ({ editor }: HighlightMenuProps) => {
+const HighlightMenu = ({ editor }: HighlightMenuProps): JSX.Element => {
   const { searchEditorNotes, editorSearchResults, updateNote } = useNotesContext()
   const [isSearching, setIsSearching] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
 
   const [isEstimateOpen, setIsEstimateOpen] = useState(false)
 
-  const toggleEstimate = () => {
+  const toggleEstimate = (): void => {
     setIsEstimateOpen(!isEstimateOpen)
   }
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const query = event.target.value
     setSearchTerm(query)
     searchEditorNotes(query)
   }
 
-  const toggleSearch = () => {
+  const toggleSearch = (): void => {
     setIsSearching(!isSearching)
   }
 
-  const handleHeadlineClick = async (note: Note) => {
+  const handleHeadlineClick = async (note: Note): Promise<void> => {
     if (!editor.state.selection.empty) {
       const { from, to } = editor.state.selection
       const highlightedText = editor.state.doc.textBetween(from, to, '')
@@ -74,7 +74,7 @@ const HighlightMenu = ({ editor }: HighlightMenuProps) => {
     setSearchTerm('')
   }
 
-  const addHighlightWithPrefix = (color: string) => {
+  const addHighlightWithPrefix = (color: string): void => {
     let colorName
     switch (color) {
       case '#2b8a3e':
