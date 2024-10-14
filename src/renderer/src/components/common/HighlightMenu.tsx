@@ -61,7 +61,7 @@ const HighlightMenu = ({ editor }: HighlightMenuProps): JSX.Element => {
       const newContent = `${note.content.trimEnd()}<br>${highlightedText}${dateTimeTag}`
 
       try {
-        updateNote('notes', note.id, note.headline, newContent, note.pinned)
+        updateNote(note.id, 'notes', note.headline, newContent, note.pinned)
       } catch (error) {
         console.error('Error updating note:', error)
       }
