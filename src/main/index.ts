@@ -1,10 +1,43 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
+let tray: Tray | null = null
+let isQuitting = false
+
+function createTray(mainWindow: BrowserWindow): void {
+  const trayIcon = nativeImage.createFromPath(icon)
+  tray = new Tray(trayIcon.resize({ width: 16, height: 16 }))
+
+  const contextMenu = Menu.buildFromTemplate([
+    { type: 'separator' },
+    {
+      label: 'Quit Hackerpad',
+      click: () => {
+        isQuitting = true
+        app.quit()
+      }
+    }
+  ])
+
+  // Set initial title and context menu
+  tray.setTitle('00:00')
+  tray.setContextMenu(contextMenu)
+
+  tray.on('click', () => {
+    if (!mainWindow.isVisible()) {
+      mainWindow.show()
+      mainWindow.focus()
+    } else {
+      if (!mainWindow.isFocused()) {
+        mainWindow.focus()
+      }
+    }
+  })
+}
+
 function createWindow(): void {
-  // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
@@ -15,6 +48,30 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }
+  })
+
+  // Create tray after window is created
+  createTray(mainWindow)
+
+  // Set up IPC listener for timer updates
+  ipcMain.on('update-tray-timer', (_event, time: string) => {
+    if (tray) {
+      // For macOS, add a space before the timer to separate it from the icon
+      const displayTime = process.platform === 'darwin' ? ` ${time}` : time
+      tray.setTitle(displayTime)
+    }
+  })
+
+  console.log('mainWindow', mainWindow)
+  // Modify window close behavior
+  mainWindow.on('close', (event) => {
+    console.log('close', isQuitting)
+    if (!isQuitting) {
+      console.log('preventing default')
+      event.preventDefault()
+      mainWindow.hide()
+    }
+    return false
   })
 
   // Load the index.html file
@@ -74,6 +131,10 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+app.on('before-quit', () => {
+  isQuitting = true
 })
 
 // In this file you can include the rest of your app"s specific main process

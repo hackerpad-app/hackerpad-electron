@@ -97,6 +97,13 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [sessionClockTicking, isBreak])
 
+  useEffect(() => {
+    const formattedTime = `${time.minutes.toString().padStart(2, '0')}:${time.seconds
+      .toString()
+      .padStart(2, '0')}`
+    window.api.updateTrayTimer(formattedTime)
+  }, [time.minutes, time.seconds])
+
   const value = {
     time,
     sessionClockTicking,
