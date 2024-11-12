@@ -5,6 +5,7 @@ import icon from '../../resources/icon.png?asset'
 
 let tray: Tray | null = null
 let isQuitting = false
+let trayText = 'Hi'
 
 function createTray(mainWindow: BrowserWindow): void {
   const trayIcon = nativeImage.createFromPath(icon)
@@ -22,7 +23,7 @@ function createTray(mainWindow: BrowserWindow): void {
   ])
 
   // Set initial title and context menu
-  tray.setTitle('00:00')
+  tray.setTitle('Hi 00:00')
   tray.setContextMenu(contextMenu)
 
   tray.on('click', () => {
@@ -56,10 +57,17 @@ function createWindow(): void {
   // Set up IPC listener for timer updates
   ipcMain.on('update-tray-timer', (_event, time: string) => {
     if (tray) {
-      // For macOS, add a space before the timer to separate it from the icon
-      const displayTime = process.platform === 'darwin' ? ` ${time}` : time
+      const displayTime =
+        process.platform === 'darwin' ? ` ${trayText} ${time}` : `${trayText} ${time}`
       tray.setTitle(displayTime)
     }
+  })
+
+  // New IPC listener for updating the text
+  ipcMain.on('update-tray-text', (_event, text: string) => {
+    trayText = text
+    // Trigger a refresh of the tray title if needed
+    mainWindow.webContents.send('request-timer-update')
   })
 
   console.log('mainWindow', mainWindow)
