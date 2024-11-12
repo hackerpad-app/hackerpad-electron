@@ -18,6 +18,9 @@ const HighlightMenu = ({ editor }: HighlightMenuProps): JSX.Element => {
 
   const toggleEstimate = (): void => {
     setIsEstimateOpen(!isEstimateOpen)
+    if (isSearching) {
+      setIsSearching(false)
+    }
   }
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -28,6 +31,9 @@ const HighlightMenu = ({ editor }: HighlightMenuProps): JSX.Element => {
 
   const toggleSearch = (): void => {
     setIsSearching(!isSearching)
+    if (isEstimateOpen) {
+      setIsEstimateOpen(false)
+    }
   }
 
   const handleHeadlineClick = async (note: Note): Promise<void> => {
