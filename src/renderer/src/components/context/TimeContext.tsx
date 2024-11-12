@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
-
 import * as React from 'react'
 import { WORK_SESSION_SECONDS, BREAK_SESSION_SECONDS } from '../../config/timerConfig'
+import magicSound from '../../assets/magic.wav'
+import upliftSound from '../../assets/uplift.wav'
 
 interface Time {
   minutes: number
@@ -73,6 +74,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             if (!newIsBreak) {
               setSessionCompleted(true)
             }
+            const audio = new Audio(isBreak ? upliftSound : magicSound)
+            audio.volume = 0.05
+            audio.play().catch((error) => console.error('Error playing sound:', error))
+
             return {
               minutes: Math.floor(newSessionSeconds / 60),
               seconds: newSessionSeconds % 60

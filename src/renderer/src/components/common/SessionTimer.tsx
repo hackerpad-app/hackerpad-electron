@@ -39,7 +39,7 @@ const SessionTimer: React.FC<SessionTimerProps> = ({
   const startSession = (): void => {
     if (canStartTimer) {
       startTimer()
-      if (!isBreak) {
+    if (!isBreak) {
         setShowGoalsWindow(true)
       }
     }
