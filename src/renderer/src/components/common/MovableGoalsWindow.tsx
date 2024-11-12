@@ -6,12 +6,23 @@ import { useSessionGoals } from '../context/SessionGoalsContext'
 import { SlArrowRight, SlArrowLeft } from 'react-icons/sl'
 import { GiDistraction } from 'react-icons/gi'
 import { IoCheckmarkDoneCircleOutline, IoCheckmarkDoneCircleSharp } from 'react-icons/io5'
+import dingSound from '../../assets/ding.mp3'
 
 const LargeGoalsView: React.FC<{ onShrink: () => void; goalWidth: string }> = ({
   onShrink,
   goalWidth
 }) => {
   const { currentSession, toggleGoalStatus } = useSessionGoals()
+
+  const handleGoalToggle = (goalId: string): void => {
+    const goal = currentSession?.goals.find((g) => g.id === goalId)
+    if (goal && !goal.finished) {
+      const audio = new Audio(dingSound)
+      audio.volume = 0.05
+      audio.play().catch((error) => console.error('Error playing sound:', error))
+    }
+    toggleGoalStatus(goalId)
+  }
 
   return (
     <div className="flex flex-row h-full">
@@ -49,7 +60,7 @@ const LargeGoalsView: React.FC<{ onShrink: () => void; goalWidth: string }> = ({
                     {goal.text}
                   </p>
                   <button
-                    onClick={() => toggleGoalStatus(goal.id)}
+                    onClick={() => handleGoalToggle(goal.id)}
                     className="ml-3 bg-transparent text-bright-green hover:text-green-600 transition-colors duration-200"
                   >
                     {goal.finished ? (

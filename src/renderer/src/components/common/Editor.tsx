@@ -119,7 +119,7 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
   const triggerConfetti = (): void => {
     // Play sound
     const audio = new Audio(dingSound)
-    audio.volume = 0.5
+    audio.volume = 0.05
     audio.play().catch((error) => console.error('Error playing sound:', error))
 
     // Trigger confetti
