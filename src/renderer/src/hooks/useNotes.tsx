@@ -26,6 +26,7 @@ interface UseNotesReturn {
   setIsCurrentDaybookFinished: React.Dispatch<React.SetStateAction<boolean>>
   setAllNotesDaybook: React.Dispatch<React.SetStateAction<Note[]>>
   setAllNotesNotes: React.Dispatch<React.SetStateAction<Note[]>>
+  duplicateNote: (pad: string, note: Note) => void
 }
 
 export default function useNotes(pad: string): UseNotesReturn {
@@ -198,6 +199,15 @@ export default function useNotes(pad: string): UseNotesReturn {
     setAllNotes(NotesArray)
   }
 
+  const duplicateNote = (pad: string, note: Note): void => {
+    const newNote: Note = { ...note, id: `note_${Date.now()}`, pinned: false }
+    const storedNotes = localStorage.getItem(`notes_${pad}`)
+    const NotesArray = storedNotes ? JSON.parse(storedNotes) : []
+    NotesArray.unshift(newNote)
+    localStorage.setItem(`notes_${pad}`, JSON.stringify(NotesArray))
+    readNotes(pad)
+  }
+
   return {
     createNote,
     deleteNote,
@@ -222,6 +232,7 @@ export default function useNotes(pad: string): UseNotesReturn {
     isCurrentDaybookFinished,
     setIsCurrentDaybookFinished,
     setAllNotesDaybook,
-    setAllNotesNotes
+    setAllNotesNotes,
+    duplicateNote
   }
 }
