@@ -24,6 +24,8 @@ interface UseNotesReturn {
   togglePinNote: (pad: string, id: string) => void
   isCurrentDaybookFinished: boolean
   setIsCurrentDaybookFinished: React.Dispatch<React.SetStateAction<boolean>>
+  setAllNotesDaybook: React.Dispatch<React.SetStateAction<Note[]>>
+  setAllNotesNotes: React.Dispatch<React.SetStateAction<Note[]>>
 }
 
 export default function useNotes(pad: string): UseNotesReturn {
@@ -218,6 +220,8 @@ export default function useNotes(pad: string): UseNotesReturn {
     searchEditorNotes,
     togglePinNote,
     isCurrentDaybookFinished,
-    setIsCurrentDaybookFinished
+    setIsCurrentDaybookFinished,
+    setAllNotesDaybook,
+    setAllNotesNotes
   }
 }

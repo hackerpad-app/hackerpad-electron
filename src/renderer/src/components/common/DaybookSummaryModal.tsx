@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useSessionGoals } from '../context/SessionGoalsContext'
+// import { useSessionGoals } from '../context/SessionGoalsContext'
 import { useNotesContext } from '../context/NotesContext'
 interface DaybookSummaryModalProps {
   isOpen: boolean
@@ -9,17 +9,9 @@ interface DaybookSummaryModalProps {
 
 const DaybookSummaryModal: React.FC<DaybookSummaryModalProps> = ({ isOpen, onClose, onSave }) => {
   const [summary, setSummary] = useState('')
-  const { completedSessions } = useSessionGoals()
   const { setIsCurrentDaybookFinished } = useNotesContext()
 
   if (!isOpen) return null
-
-  const sessionCount = completedSessions.length
-  const taskCount = completedSessions.reduce((total, session) => total + session.goals.length, 0)
-  const completedTaskCount = completedSessions.reduce(
-    (total, session) => total + session.goals.filter((goal) => goal.finished).length,
-    0
-  )
 
   const handleSave = (): void => {
     setIsCurrentDaybookFinished(true)

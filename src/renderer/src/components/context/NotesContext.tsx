@@ -33,7 +33,7 @@ export const NotesProvider: React.FC<{ children: ReactNode; pad: string }> = ({
   children,
   pad
 }) => {
-  const notesData = useNotes(pad)
+  const notesData = useNotes(pad) as NotesContextType
 
   return <NotesContext.Provider value={notesData}>{children}</NotesContext.Provider>
 }
