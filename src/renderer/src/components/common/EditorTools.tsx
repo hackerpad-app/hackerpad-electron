@@ -7,6 +7,7 @@ import { FaSearch } from 'react-icons/fa'
 import DaybookSummaryModal from './DaybookSummaryModal'
 import { useSessionGoals } from '../context/SessionGoalsContext'
 import { PiCalendarCheckThin } from 'react-icons/pi'
+import DeleteNoteModal from './DeleteNoteModal'
 
 interface ToolsProps {
   pad: string
@@ -18,6 +19,7 @@ const Tools = ({ pad }: ToolsProps): React.ReactNode => {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [headlineInput, setHeadlineInput] = useState('')
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false)
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false)
   const { setDaySummary } = useSessionGoals()
 
   const handleCreateNote = (): void => {
@@ -51,6 +53,11 @@ const Tools = ({ pad }: ToolsProps): React.ReactNode => {
     setDaySummary(summary)
   }
 
+  const handleDeleteNote = (): void => {
+    deleteNote(pad)
+    setDeleteModalOpen(false)
+  }
+
   return (
     <div>
       {isModalVisible && (
@@ -70,6 +77,13 @@ const Tools = ({ pad }: ToolsProps): React.ReactNode => {
           </div>
         </>
       )}
+      {isDeleteModalOpen && (
+        <DeleteNoteModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          onDelete={handleDeleteNote}
+        />
+      )}
       <div className="flex justify-between">
         <div className="flex ml-2">
           <button onClick={handleCreateNote} className="mr-3 bg-transparent">
@@ -77,7 +91,7 @@ const Tools = ({ pad }: ToolsProps): React.ReactNode => {
               <PiNotePencilLight />
             </div>
           </button>
-          <button onClick={() => deleteNote(pad)} className="bg-transparent">
+          <button onClick={() => setDeleteModalOpen(true)} className="bg-transparent">
             <div className="py-4 text-bright-green" style={{ fontSize: '2rem' }}>
               <AiOutlineDelete />
             </div>
