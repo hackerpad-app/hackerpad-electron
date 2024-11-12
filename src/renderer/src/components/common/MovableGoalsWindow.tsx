@@ -7,7 +7,10 @@ import { SlArrowRight, SlArrowLeft } from 'react-icons/sl'
 import { GiDistraction } from 'react-icons/gi'
 import { IoCheckmarkDoneCircleOutline, IoCheckmarkDoneCircleSharp } from 'react-icons/io5'
 
-const LargeGoalsView: React.FC<{ onShrink: () => void }> = ({ onShrink }) => {
+const LargeGoalsView: React.FC<{ onShrink: () => void; goalWidth: string }> = ({
+  onShrink,
+  goalWidth
+}) => {
   const { currentSession, toggleGoalStatus } = useSessionGoals()
 
   return (
@@ -22,15 +25,18 @@ const LargeGoalsView: React.FC<{ onShrink: () => void }> = ({ onShrink }) => {
         </button>
       </div>
       <div className="flex-grow flex items-center justify-center">
-        <div className="w-full max-h-full overflow-y-auto pr-2 py-2">
+        <div
+          className="w-full max-h-full overflow-y-auto pr-2 py-2"
+          style={{ minWidth: goalWidth }}
+        >
           {!currentSession || currentSession.goals.length === 0 ? (
             <p className="text-bright-green text-lg text-center">No goals added.</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1">
               {currentSession.goals.map((goal) => (
                 <div
                   key={goal.id}
-                  className="bg-macdonalds-shit bg-opacity-75 rounded-lg p-2 shadow-sm flex items-center justify-between w-full"
+                  className="bg-macdonalds-shit bg-opacity-75 rounded-lg p-1 shadow-sm flex items-center justify-between w-full"
                 >
                   <p
                     className="text-black text-lg flex-grow"
@@ -67,7 +73,7 @@ const MovableGoalsWindow: React.FC = () => {
   const [distractions, setDistractions] = useState<string[]>([])
   const [currentDistraction, setCurrentDistraction] = useState('')
   const { time } = useTimer()
-  const { addDistraction } = useSessionGoals()
+  const { addDistraction, currentSession } = useSessionGoals()
   const nodeRef = useRef(null)
 
   const toggleSize = (): void => setIsLarge(!isLarge)
@@ -85,20 +91,24 @@ const MovableGoalsWindow: React.FC = () => {
     }
   }
 
+  const maxGoalLength =
+    currentSession?.goals.reduce((max, goal) => Math.max(max, goal.text.length), 0) || 0
+  const goalWidth = maxGoalLength > 0 ? `${Math.max(maxGoalLength * 10 + 20, 300)}px` : '300px'
+
   return (
     <Draggable handle=".handle" nodeRef={nodeRef}>
       <div
         ref={nodeRef}
         className={`fixed ${
           isLarge
-            ? 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 max-h-[80vh]'
+            ? `top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[${goalWidth}]`
             : 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-12'
         } bg-side-window-green rounded-lg shadow-lg z-50 flex flex-col`}
       >
         {isLarge ? (
           <div className="flex flex-col h-full overflow-hidden">
             <div className="flex-grow overflow-auto">
-              <LargeGoalsView onShrink={toggleSize} />
+              <LargeGoalsView onShrink={toggleSize} goalWidth={goalWidth} />
             </div>
           </div>
         ) : (
