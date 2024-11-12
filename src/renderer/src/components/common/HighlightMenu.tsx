@@ -56,7 +56,7 @@ const HighlightMenu = ({ editor }: HighlightMenuProps): JSX.Element => {
         .setTextSelection({ from, to: to + noteTag.length })
         .run()
 
-      editor.commands.setMark('highlight', { color: '#2d2d1f' })
+      editor.commands.setMark('highlight', { color: 'rgba(255, 255, 77, 0.25)' })
 
       const newContent = `${note.content.trimEnd()}<br>${highlightedText}${dateTimeTag}`
 
