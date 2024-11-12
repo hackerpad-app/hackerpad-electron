@@ -15,6 +15,7 @@ import HighlightMenu from './HighlightMenu'
 import BulletList from '@tiptap/extension-bullet-list'
 import ListItem from '@tiptap/extension-list-item'
 import CompletedSessionGoals from './CompletedSessionGoals'
+import dingSound from '../../assets/ding.mp3'
 
 interface EditorProps {
   pad: string
@@ -116,6 +117,12 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
   }, [isBreak, currentSession, endCurrentSession])
 
   const triggerConfetti = (): void => {
+    // Play sound
+    const audio = new Audio(dingSound)
+    audio.volume = 0.5
+    audio.play().catch((error) => console.error('Error playing sound:', error))
+
+    // Trigger confetti
     confetti({
       particleCount: 100,
       spread: 70,
