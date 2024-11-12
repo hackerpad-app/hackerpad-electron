@@ -6,6 +6,8 @@ export default {
       colors: {
         'dark-green': '#1B1B15',
         'bright-green': '#1CF86E',
+        'font-white': '#F7F8FA',
+        'font-gray': '#9CA3AF',
         'side-window-green': 'rgba(40, 40, 33, 0.75)',
         'session-goals-green': 'rgba(40, 40, 33, 1.0)',
         'macdonalds-shit': {

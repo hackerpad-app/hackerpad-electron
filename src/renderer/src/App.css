@@ -50,29 +50,31 @@
 }
 
 .prose h1 {
-  color: #ffffff;
+  color: #F7F8FA;
   font-size: 32px;
 }
 
 .prose h2 {
-  color: #ffffff;
+  color: #F7F8FA;
   font-size: 24px;
 }
 
 .prose h3 {
-  color: #ffffff;
+  color: #F7F8FA;
   font-size: 18px;
 }
 
 .prose h4 {
-  color: #ffffff;
+  color: #F7F8FA;
   font-size: 12px;
 }
 
 .prose p {
-  color: #ffffff;
+  color: #F7F8FA;
   line-height: 1.5;
 }
+
+/* 8E8E93 */
 
 .prose:focus,
 .prose:focus-within {

@@ -150,7 +150,7 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
         <div className="-nowrap relative">
           <EditorContent editor={headlineEditor} />
         </div>
-        <div className="mr-5">
+        <div className="mr-5 text-gray-400">
           {displayedNote?.updated_at
             ? `${new Date(displayedNote.updated_at).toLocaleDateString('en-US', {
                 year: 'numeric',

@@ -77,14 +77,14 @@ const NoteItem = ({
       onClick={handleClick}
     >
       <div className="p-2 flex-grow">
-        <div className="text-xs font-bold">
+        <div className="text-xs font-bold text-font-white">
           {note.headline.length > 45
             ? note.headline.substring(0, 45).replace(/<[^>]*>/g, '') + '...'
             : note.headline.replace(/<[^>]*>/g, '')}
         </div>
       </div>
       {pad === 'daybook' && (
-        <div className="text-xs text-center p-2 text-white opacity-25 self-start flex-shrink-0">
+        <div className="text-xs text-center p-2 opacity-25 self-start flex-shrink-0">
           {new Date(note.created_at).toLocaleDateString()}
         </div>
       )}

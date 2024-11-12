@@ -112,9 +112,9 @@ const Tools = ({ pad }: ToolsProps): React.ReactNode => {
               type="text"
               placeholder="Search..."
               onChange={handleSearchChange}
-              className="bg-transparent rounded-md text-gray-300 pl-8 pr-3 py-1 mr-2 ring-gray-300 ring-1 focus:outline-none w-64"
+              className="bg-transparent rounded-md text-gray-400 pl-8 pr-3 py-1 mr-2 ring-gray-300 ring-1 focus:outline-none w-64"
             />
-            <FaSearch className="absolute left-2 text-gray-300" />
+            <FaSearch className="absolute left-2 text-gray-400" />
           </div>
         </div>
       </div>

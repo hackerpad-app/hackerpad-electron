@@ -42,7 +42,7 @@ const CompletedSessionGoals: React.FC<CompletedSessionGoalsProps> = ({ noteId })
           />
         ))}
 
-        <div className="text-opacity-75 text-sm text-white">
+        <div className="text-opacity-75 text-sm text-gray-400">
           <span className="ml-2">{formattedFinishRate}% tasks finished </span>
         </div>
         {daySummary && (
