@@ -146,7 +146,7 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
       <div className="relative">
         <Tools pad={pad} />
       </div>
-      <div className="flex pb-3 items-center justify-between border border-green-900 rounded-lg">
+      <div className="flex pb-3 items-center justify-between border-b border-green-900">
         <div className="-nowrap relative">
           <EditorContent editor={headlineEditor} />
         </div>
