@@ -135,7 +135,7 @@ const SummaryHoverInfo: React.FC<{ summary: string; position: { x: number; y: nu
       className="fixed bg-bright-green text-black p-3 rounded-lg shadow-lg w-64 z-50"
       style={{ left: `${position.x}px`, top: `${position.y}px` }}
     >
-      <h4 className="font-semibold mb-2">Day Summary</h4>
+      <h4 className="font-semibold mb-2">Summary</h4>
       <p className="text-sm">{summary}</p>
     </div>
   )
