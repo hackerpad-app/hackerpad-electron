@@ -9,6 +9,7 @@ import DaybookSummaryModal from './DaybookSummaryModal'
 import { useSessionGoals } from '../context/SessionGoalsContext'
 import { PiCalendarCheckThin } from 'react-icons/pi'
 import DeleteNoteModal from './DeleteNoteModal'
+import NoteStartModal from './modals/NoteStartModal'
 
 interface ToolsProps {
   pad: string
@@ -75,23 +76,13 @@ const Tools = ({ pad }: ToolsProps): React.ReactNode => {
 
   return (
     <div>
-      {isModalVisible && (
-        <>
-          <div className="overlay"></div>
-          <div className="modal flex justify-between">
-            <input
-              type="text"
-              placeholder="Heeadline"
-              value={headlineInput}
-              onChange={(e) => setHeadlineInput(e.target.value)}
-              className="border p-2"
-            />
-            <button onClick={handleModalSubmit} className=" bg-blue-500 text-white p-2 rounded">
-              Create
-            </button>
-          </div>
-        </>
-      )}
+      <NoteStartModal
+        isVisible={isModalVisible}
+        headlineInput={headlineInput}
+        onHeadlineChange={(value) => setHeadlineInput(value)}
+        onSubmit={handleModalSubmit}
+        onClose={() => setIsModalVisible(false)}
+      />
       {isDeleteModalOpen && (
         <DeleteNoteModal
           isOpen={isDeleteModalOpen}
