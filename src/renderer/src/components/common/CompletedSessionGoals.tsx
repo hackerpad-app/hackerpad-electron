@@ -155,7 +155,7 @@ const HoverInfo: React.FC<{ session: Session; position: { x: number; y: number }
         {session.distractions.length > 0 && (
           <div className="text-xs flex items-center">
             <GiDistraction className="mr-1 text-bright-green" />
-            <span>{session.distractions.length} distractions</span>
+            <span>{session.distractions.length} distraction(s)</span>
           </div>
         )}
       </div>
