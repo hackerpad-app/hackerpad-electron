@@ -39,7 +39,7 @@ const SessionTimer: React.FC<SessionTimerProps> = ({
   const startSession = (): void => {
     if (canStartTimer) {
       startTimer()
-    if (!isBreak) {
+      if (!isBreak) {
         setShowGoalsWindow(true)
       }
     }
@@ -49,6 +49,7 @@ const SessionTimer: React.FC<SessionTimerProps> = ({
     if (!sessionClockTicking) {
       setShowGoalsWindow(false)
       setShowMovableGoalsWindow(false)
+      window.electron.ipcRenderer.send('hide-goals-window')
     }
   }, [sessionClockTicking])
 

@@ -1,6 +1,5 @@
 import * as React from 'react'
-import { useState, useRef } from 'react'
-import Draggable from 'react-draggable'
+import { useState, useEffect } from 'react'
 import { useTimer } from '../context/TimeContext'
 import { useSessionGoals } from '../context/SessionGoalsContext'
 import { SlArrowRight, SlArrowLeft } from 'react-icons/sl'
@@ -85,9 +84,20 @@ const MovableGoalsWindow: React.FC = () => {
   const [currentDistraction, setCurrentDistraction] = useState('')
   const { time } = useTimer()
   const { addDistraction, currentSession } = useSessionGoals()
-  const nodeRef = useRef(null)
 
-  const toggleSize = (): void => setIsLarge(!isLarge)
+  useEffect(() => {
+    // Set up IPC listeners for window state
+    window.electron.ipcRenderer.on('goals-updated', (data) => {
+      // Handle goals updates from main window
+      console.log('Goals updated:', data)
+    })
+  }, [])
+
+  const toggleSize = (): void => {
+    setIsLarge(!isLarge)
+    // Notify main process about size change
+    window.electron.ipcRenderer.send('toggle-goals-window-size', !isLarge)
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setCurrentDistraction(e.target.value)
@@ -107,52 +117,53 @@ const MovableGoalsWindow: React.FC = () => {
   const goalWidth = maxGoalLength > 0 ? `${Math.max(maxGoalLength * 10 + 20, 300)}px` : '300px'
 
   return (
-    <Draggable handle=".handle" nodeRef={nodeRef}>
-      <div
-        ref={nodeRef}
-        className={`fixed ${
-          isLarge
-            ? `top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[${goalWidth}]`
-            : 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-12'
-        } bg-side-window-green rounded-lg shadow-lg z-50 flex flex-col`}
-      >
-        {isLarge ? (
-          <div className="flex flex-col h-full overflow-hidden">
-            <div className="flex-grow overflow-auto">
-              <LargeGoalsView onShrink={toggleSize} goalWidth={goalWidth} />
-            </div>
+    <div
+      style={{ WebkitAppRegion: 'drag' }}
+      className={`${
+        isLarge ? `w-[${goalWidth}]` : 'w-96 h-12'
+      } bg-side-window-green rounded-lg shadow-lg z-50 flex flex-col`}
+    >
+      {isLarge ? (
+        <div className="flex flex-col h-full overflow-hidden">
+          <div className="flex-grow overflow-auto">
+            <LargeGoalsView onShrink={toggleSize} goalWidth={goalWidth} />
           </div>
-        ) : (
-          <div className="flex-grow flex items-center">
-            <div className="w-full h-full handle cursor-move rounded-lg flex flex-row items-center justify-between px-2">
-              <button
-                onClick={toggleSize}
-                className="w-6 h-6 text-bright-green bg-transparent flex items-center justify-center"
-                aria-label={isLarge ? 'Switch to small window' : 'Switch to large overview'}
-              >
-                {isLarge ? <SlArrowRight size={16} /> : <SlArrowLeft size={16} />}
-              </button>
-              <div className="text-sm whitespace-nowrap">
-                {String(time.minutes).padStart(2, '0')}:{String(time.seconds).padStart(2, '0')} left
-              </div>
-              <div className="flex items-center space-x-1">
-                <GiDistraction className="text-bright-green opacity-50" size={16} />
-                <span className="text-sm font-bold">{distractions.length}</span>
-              </div>
-              <form onSubmit={handleSubmit} className="flex-grow max-w-[40%]">
-                <input
-                  type="text"
-                  value={currentDistraction}
-                  onChange={handleInputChange}
-                  placeholder="Distractions.."
-                  className="w-full p-1 text-sm rounded bg-white bg-opacity-5"
-                />
-              </form>
+        </div>
+      ) : (
+        <div className="flex-grow flex items-center">
+          <div className="w-full h-full flex flex-row items-center justify-between px-2">
+            <button
+              style={{ WebkitAppRegion: 'no-drag' }}
+              onClick={toggleSize}
+              className="w-6 h-6 text-bright-green bg-transparent flex items-center justify-center"
+              aria-label={isLarge ? 'Switch to small window' : 'Switch to large overview'}
+            >
+              {isLarge ? <SlArrowRight size={16} /> : <SlArrowLeft size={16} />}
+            </button>
+            <div className="text-sm whitespace-nowrap">
+              {String(time.minutes).padStart(2, '0')}:{String(time.seconds).padStart(2, '0')} left
             </div>
+            <div className="flex items-center space-x-1">
+              <GiDistraction className="text-bright-green opacity-50" size={16} />
+              <span className="text-sm font-bold">{distractions.length}</span>
+            </div>
+            <form
+              onSubmit={handleSubmit}
+              className="flex-grow max-w-[40%]"
+              style={{ WebkitAppRegion: 'no-drag' }}
+            >
+              <input
+                type="text"
+                value={currentDistraction}
+                onChange={handleInputChange}
+                placeholder="Distractions.."
+                className="w-full p-1 text-sm rounded bg-white bg-opacity-5"
+              />
+            </form>
           </div>
-        )}
-      </div>
-    </Draggable>
+        </div>
+      )}
+    </div>
   )
 }
 

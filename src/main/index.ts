@@ -3,9 +3,34 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
+let mainWindow: BrowserWindow | null = null
+let goalsWindow: BrowserWindow | null = null
 let tray: Tray | null = null
 let isQuitting = false
 let trayText = 'Hi'
+
+ipcMain.on('show-goals-window', () => {
+  if (!goalsWindow) {
+    createGoalsWindow(mainWindow)
+  }
+  goalsWindow?.show()
+})
+
+ipcMain.on('hide-goals-window', () => {
+  goalsWindow?.hide()
+})
+
+ipcMain.on('transition-to-movable-window', (event) => {
+  if (!goalsWindow) {
+    const parentWindow = BrowserWindow.fromWebContents(event.sender)
+    if (parentWindow) {
+      createGoalsWindow(parentWindow)
+    } else {
+      console.error('Could not find parent window from event sender')
+    }
+  }
+  goalsWindow?.show()
+})
 
 function createTray(mainWindow: BrowserWindow): void {
   const trayIcon = nativeImage.createFromPath(icon)
@@ -15,7 +40,7 @@ function createTray(mainWindow: BrowserWindow): void {
     { type: 'separator' },
     {
       label: 'Quit Hackerpad',
-      click: () => {
+      click: (): void => {
         isQuitting = true
         app.quit()
       }
@@ -38,8 +63,83 @@ function createTray(mainWindow: BrowserWindow): void {
   })
 }
 
+function createGoalsWindow(parentWindow: BrowserWindow): void {
+  if (!parentWindow) {
+    console.error('Cannot create goals window: No parent window provided')
+    return
+  }
+
+  goalsWindow = new BrowserWindow({
+    width: 400,
+    height: 48,
+    frame: false,
+    show: false,
+    transparent: true,
+    resizable: false,
+    hasShadow: true,
+    acceptFirstMouse: true,
+    backgroundColor: '#00000000',
+    modal: false,
+    movable: true,
+    alwaysOnTop: true,
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false,
+      nodeIntegration: true,
+      contextIsolation: true
+    }
+  })
+
+  goalsWindow.setWindowButtonVisibility(false)
+
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    goalsWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/movable-goals.html`)
+  } else {
+    goalsWindow.loadFile(join(__dirname, '../renderer/movable-goals.html'))
+  }
+
+  // Position relative to parent initially
+  goalsWindow.once('ready-to-show', () => {
+    if (parentWindow && !parentWindow.isDestroyed()) {
+      const [parentX, parentY] = parentWindow.getPosition()
+      const [parentWidth] = parentWindow.getSize()
+      goalsWindow?.setPosition(parentX + parentWidth / 2 - 200, parentY + 100)
+      goalsWindow?.show()
+    }
+  })
+
+  // Keep window visible when parent is minimized
+  parentWindow.on('minimize', () => {
+    if (goalsWindow?.isVisible()) {
+      goalsWindow.setAlwaysOnTop(true)
+    }
+  })
+
+  // Handle window closure independently
+  goalsWindow.on('close', (event) => {
+    if (!isQuitting) {
+      event.preventDefault()
+      goalsWindow?.hide()
+    }
+  })
+
+  goalsWindow.on('closed', () => {
+    goalsWindow = null
+  })
+
+  ipcMain.on('toggle-goals-window-size', (_, isLarge) => {
+    if (goalsWindow) {
+      if (isLarge) {
+        goalsWindow.setSize(400, 300)
+      } else {
+        goalsWindow.setSize(400, 48)
+      }
+    }
+  })
+}
+
 function createWindow(): void {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
@@ -53,6 +153,27 @@ function createWindow(): void {
 
   // Create tray after window is created
   createTray(mainWindow)
+
+  // Add IPC handlers for window communication
+  ipcMain.on('transition-to-movable-window', (event) => {
+    if (!goalsWindow) {
+      const parentWindow = BrowserWindow.fromWebContents(event.sender)
+      if (parentWindow) {
+        createGoalsWindow(parentWindow)
+      }
+    }
+    goalsWindow?.show()
+  })
+
+  ipcMain.on('toggle-goals-window-size', (_, isLarge) => {
+    if (goalsWindow) {
+      if (isLarge) {
+        goalsWindow.setSize(400, 300)
+      } else {
+        goalsWindow.setSize(400, 48)
+      }
+    }
+  })
 
   // Set up IPC listener for timer updates
   ipcMain.on('update-tray-timer', (_event, time: string) => {
@@ -68,6 +189,21 @@ function createWindow(): void {
     trayText = text
     // Trigger a refresh of the tray title if needed
     mainWindow.webContents.send('request-timer-update')
+  })
+
+  // Add IPC handlers for window communication
+  ipcMain.on('show-goals-window', () => {
+    goalsWindow?.show()
+  })
+
+  ipcMain.on('hide-goals-window', () => {
+    goalsWindow?.hide()
+  })
+
+  // Add handler for goals data
+  ipcMain.on('update-goals', (event, goalsData) => {
+    // Forward goals data to main window
+    mainWindow.webContents.send('goals-updated', goalsData)
   })
 
   console.log('mainWindow', mainWindow)

@@ -9,6 +9,11 @@ const SessionGoalsWindow: React.FC = () => {
   const [newGoal, setNewGoal] = useState('')
   const { displayedNoteDaybook } = useNotesContext()
 
+  const handleTransition = (): void => {
+    transitionToMovableWindow()
+    window.electron.ipcRenderer.send('show-goals-window')
+  }
+
   useEffect(() => {
     if (!currentSession) {
       if (displayedNoteDaybook) {
@@ -33,7 +38,7 @@ const SessionGoalsWindow: React.FC = () => {
         <div className="flex justify-between items-center p-4">
           <h2 className="text-xl font-bold">Session Goals</h2>
           <button
-            onClick={transitionToMovableWindow}
+            onClick={handleTransition}
             className="text-bright-green bg-transparent p-1 transition-colors"
             aria-label="Start session"
           >
