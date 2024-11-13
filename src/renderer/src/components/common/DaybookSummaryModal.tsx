@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
-// import { useSessionGoals } from '../context/SessionGoalsContext'
 import { useNotesContext } from '../context/NotesContext'
+import dingSound from '../../assets/end-bell.mp3'
+import confetti from 'canvas-confetti'
+
 interface DaybookSummaryModalProps {
   isOpen: boolean
   onClose: () => void
@@ -14,6 +16,17 @@ const DaybookSummaryModal: React.FC<DaybookSummaryModalProps> = ({ isOpen, onClo
   if (!isOpen) return null
 
   const handleSave = (): void => {
+    const audio = new Audio(dingSound)
+    audio.volume = 0.05
+    audio.play().catch((error) => console.error('Error playing sound:', error))
+
+    confetti({
+      particleCount: 750,
+      spread: 200,
+      origin: { y: 0.65 },
+      colors: ['#26a69a', '#FF69B4', '#FFD700', '#FF6B6B', '#4169E1', '#9370DB', '#32CD32']
+    })
+
     setIsCurrentDaybookFinished(true)
     onSave(summary)
     onClose()

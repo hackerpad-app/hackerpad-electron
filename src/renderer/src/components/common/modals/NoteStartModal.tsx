@@ -24,7 +24,7 @@ const NoteStartModal = ({
           <input
             type="text"
             placeholder="Headline"
-            value={headlineInput}
+            value={headlineInput} r 
             onChange={(e) => onHeadlineChange(e.target.value)}
             className="w-full p-2 mb-4 bg-dark-mode-lighter text-white rounded border border-white/20"
           />

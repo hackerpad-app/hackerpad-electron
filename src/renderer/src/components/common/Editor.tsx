@@ -117,17 +117,15 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
   }, [isBreak, currentSession, endCurrentSession])
 
   const triggerConfetti = (): void => {
-    // Play sound
     const audio = new Audio(dingSound)
     audio.volume = 0.05
     audio.play().catch((error) => console.error('Error playing sound:', error))
 
-    // Trigger confetti
     confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#26a69a', '#00897b', '#00796b', '#00695c', '#004d40']
+      particleCount: 50,
+      spread: 75,
+      origin: { y: 0.65 },
+      colors: ['#26a69a']
     })
   }
 
