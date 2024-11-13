@@ -42,9 +42,11 @@ const CompletedSessionGoals: React.FC<CompletedSessionGoalsProps> = ({ noteId })
           />
         ))}
 
-        <div className="text-opacity-75 text-sm text-gray-400">
-          <span className="ml-2">{formattedFinishRate}% tasks finished </span>
-        </div>
+        {filteredSessions.length > 0 && (
+          <div className="text-opacity-75 text-sm text-gray-400">
+            <span className="ml-2">{formattedFinishRate}% tasks finished </span>
+          </div>
+        )}
         {daySummary && (
           <SummaryPin
             onHover={(x, y) => {
