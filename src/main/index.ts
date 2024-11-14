@@ -5,6 +5,7 @@ import icon from '../../resources/icon.png?asset'
 
 let mainWindow: BrowserWindow | null = null
 let goalsWindow: BrowserWindow | null = null
+
 let tray: Tray | null = null
 let isQuitting = false
 let trayText = 'Hi'
@@ -18,18 +19,6 @@ ipcMain.on('show-goals-window', () => {
 
 ipcMain.on('hide-goals-window', () => {
   goalsWindow?.hide()
-})
-
-ipcMain.on('transition-to-movable-window', (event) => {
-  if (!goalsWindow) {
-    const parentWindow = BrowserWindow.fromWebContents(event.sender)
-    if (parentWindow) {
-      createGoalsWindow(parentWindow)
-    } else {
-      console.error('Could not find parent window from event sender')
-    }
-  }
-  goalsWindow?.show()
 })
 
 function createTray(mainWindow: BrowserWindow): void {
@@ -69,6 +58,8 @@ function createGoalsWindow(parentWindow: BrowserWindow): void {
     return
   }
 
+  const isFullScreen = parentWindow.isFullScreen()
+
   goalsWindow = new BrowserWindow({
     width: 400,
     height: 48,
@@ -76,12 +67,16 @@ function createGoalsWindow(parentWindow: BrowserWindow): void {
     show: false,
     transparent: true,
     resizable: false,
-    hasShadow: true,
     acceptFirstMouse: true,
     backgroundColor: '#00000000',
+    parent: parentWindow,
     modal: false,
     movable: true,
     alwaysOnTop: true,
+    skipTaskbar: true,
+    focusable: false,
+    hasShadow: false,
+    fullscreenable: false,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -89,6 +84,15 @@ function createGoalsWindow(parentWindow: BrowserWindow): void {
       contextIsolation: true
     }
   })
+
+  if (process.platform === 'darwin') {
+    goalsWindow.setVisibleOnAllWorkspaces(true, {
+      visibleOnFullScreen: true,
+      skipTransformProcessType: true
+    })
+  }
+
+  goalsWindow.setAlwaysOnTop(true, 'screen-saver', 1)
 
   goalsWindow.setWindowButtonVisibility(false)
 
@@ -98,13 +102,42 @@ function createGoalsWindow(parentWindow: BrowserWindow): void {
     goalsWindow.loadFile(join(__dirname, '../renderer/movable-goals.html'))
   }
 
-  // Position relative to parent initially
+  // Position relative to parent initially and handle fullscreen
   goalsWindow.once('ready-to-show', () => {
     if (parentWindow && !parentWindow.isDestroyed()) {
+      const isFullScreen = parentWindow.isFullScreen()
+
+      if (isFullScreen) {
+        // Get the display where the parent window is
+        const display = require('electron').screen.getDisplayMatching(parentWindow.getBounds())
+        const { workArea } = display
+
+        // Position in the center of the screen
+        goalsWindow?.setPosition(workArea.x + workArea.width / 2 - 200, workArea.y + 100)
+      } else {
+        // Normal positioning relative to parent
+        const [parentX, parentY] = parentWindow.getPosition()
+        const [parentWidth] = parentWindow.getSize()
+        goalsWindow?.setPosition(parentX + parentWidth / 2 - 200, parentY + 100)
+      }
+      goalsWindow?.show()
+    }
+  })
+
+  // Handle parent window fullscreen changes
+  parentWindow.on('enter-full-screen', () => {
+    if (goalsWindow && !goalsWindow.isDestroyed()) {
+      const display = require('electron').screen.getDisplayMatching(parentWindow.getBounds())
+      const { workArea } = display
+      goalsWindow.setPosition(workArea.x + workArea.width / 2 - 200, workArea.y + 100)
+    }
+  })
+
+  parentWindow.on('leave-full-screen', () => {
+    if (goalsWindow && !goalsWindow.isDestroyed()) {
       const [parentX, parentY] = parentWindow.getPosition()
       const [parentWidth] = parentWindow.getSize()
-      goalsWindow?.setPosition(parentX + parentWidth / 2 - 200, parentY + 100)
-      goalsWindow?.show()
+      goalsWindow.setPosition(parentX + parentWidth / 2 - 200, parentY + 100)
     }
   })
 
@@ -153,17 +186,6 @@ function createWindow(): void {
 
   // Create tray after window is created
   createTray(mainWindow)
-
-  // Add IPC handlers for window communication
-  ipcMain.on('transition-to-movable-window', (event) => {
-    if (!goalsWindow) {
-      const parentWindow = BrowserWindow.fromWebContents(event.sender)
-      if (parentWindow) {
-        createGoalsWindow(parentWindow)
-      }
-    }
-    goalsWindow?.show()
-  })
 
   ipcMain.on('toggle-goals-window-size', (_, isLarge) => {
     if (goalsWindow) {
