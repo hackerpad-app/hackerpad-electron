@@ -69,7 +69,6 @@ function createGoalsWindow(parentWindow: BrowserWindow): void {
     resizable: false,
     acceptFirstMouse: true,
     backgroundColor: '#00000000',
-    parent: parentWindow,
     modal: false,
     movable: true,
     alwaysOnTop: true,
@@ -105,41 +104,22 @@ function createGoalsWindow(parentWindow: BrowserWindow): void {
   // Position relative to parent initially and handle fullscreen
   goalsWindow.once('ready-to-show', () => {
     if (parentWindow && !parentWindow.isDestroyed()) {
-      const isFullScreen = parentWindow.isFullScreen()
+      // Get all displays
+      const displays = require('electron').screen.getAllDisplays()
+      // Use primary display for initial positioning
+      const primaryDisplay = displays[0]
 
-      if (isFullScreen) {
-        // Get the display where the parent window is
-        const display = require('electron').screen.getDisplayMatching(parentWindow.getBounds())
-        const { workArea } = display
-
-        // Position in the center of the screen
-        goalsWindow?.setPosition(workArea.x + workArea.width / 2 - 200, workArea.y + 100)
-      } else {
-        // Normal positioning relative to parent
-        const [parentX, parentY] = parentWindow.getPosition()
-        const [parentWidth] = parentWindow.getSize()
-        goalsWindow?.setPosition(parentX + parentWidth / 2 - 200, parentY + 100)
-      }
+      // Position in the center of the primary display
+      const { workArea } = primaryDisplay
+      goalsWindow?.setPosition(workArea.x + workArea.width / 2 - 200, workArea.y + 100)
       goalsWindow?.show()
     }
   })
 
-  // Handle parent window fullscreen changes
-  parentWindow.on('enter-full-screen', () => {
-    if (goalsWindow && !goalsWindow.isDestroyed()) {
-      const display = require('electron').screen.getDisplayMatching(parentWindow.getBounds())
-      const { workArea } = display
-      goalsWindow.setPosition(workArea.x + workArea.width / 2 - 200, workArea.y + 100)
-    }
-  })
-
-  parentWindow.on('leave-full-screen', () => {
-    if (goalsWindow && !goalsWindow.isDestroyed()) {
-      const [parentX, parentY] = parentWindow.getPosition()
-      const [parentWidth] = parentWindow.getSize()
-      goalsWindow.setPosition(parentX + parentWidth / 2 - 200, parentY + 100)
-    }
-  })
+  // Remove or modify the fullscreen event handlers since we want independent positioning
+  // You can remove these event listeners entirely if you want full independence
+  parentWindow.removeAllListeners('enter-full-screen')
+  parentWindow.removeAllListeners('leave-full-screen')
 
   // Keep window visible when parent is minimized
   parentWindow.on('minimize', () => {
