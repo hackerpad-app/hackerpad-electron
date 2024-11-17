@@ -12,12 +12,6 @@ const LargeGoalsView: React.FC<{ onShrink: () => void; goalWidth: string }> = ({
   goalWidth
 }) => {
   const { currentSession } = useSessionGoals()
-
-  // Add debug logging
-  useEffect(() => {
-    console.log('Current session goals:', currentSession?.goals)
-  }, [currentSession?.goals])
-
   // Create a map to track seen IDs
   const seenIds = new Set<string>()
 
@@ -142,14 +136,6 @@ const MovableGoalsWindow: React.FC = () => {
 
     // Request initial state when component mounts
     window.electron.ipcRenderer.send('request-goals-state')
-
-    // Send current session goals to main process whenever they change
-    if (currentSession) {
-      window.electron.ipcRenderer.send('update-goals-state', {
-        type: 'add-goal',
-        goals: currentSession.goals
-      })
-    }
   }, [currentSession?.goals, distractions])
 
   const toggleSize = (): void => {
