@@ -103,7 +103,7 @@ const LargeGoalsView: React.FC<{ onShrink: () => void; goalWidth: string }> = ({
 const MovableGoalsWindow: React.FC = () => {
   const [isLarge, setIsLarge] = useState(false)
   const [currentDistraction, setCurrentDistraction] = useState('')
-  const { time } = useTimer()
+  const [localTime, setLocalTime] = useState({ minutes: 0, seconds: 0 })
   const { currentSession, setCurrentSession } = useSessionGoals()
 
   useEffect(() => {
@@ -133,8 +133,24 @@ const MovableGoalsWindow: React.FC = () => {
     // Request initial state when component mounts
     window.electron.ipcRenderer.send('request-goals-state')
 
+    // Listen for timer updates from the main process
+    window.electron.ipcRenderer.on('timer-state-update', (newTime: any) => {
+      console.log('Goals window received timer update:', newTime)
+      setLocalTime(newTime)
+    })
+
+    // Request initial timer state
+    window.electron.ipcRenderer.send('request-timer-state')
+
+    // Periodically request timer state to ensure sync
+    const intervalId = setInterval(() => {
+      window.electron.ipcRenderer.send('request-timer-state')
+    }, 1000)
+
     return (): void => {
       window.electron.ipcRenderer.removeListener('goals-state-update', handleGoalsStateUpdate)
+      window.electron.ipcRenderer.removeListener('timer-state-update', setLocalTime)
+      clearInterval(intervalId)
     }
   }, []) // Empty dependency array since we handle currentSession inside the callback
 
@@ -201,7 +217,8 @@ const MovableGoalsWindow: React.FC = () => {
               {isLarge ? <SlArrowRight size={16} /> : <SlArrowLeft size={16} />}
             </button>
             <div className="text-sm whitespace-nowrap">
-              {String(time.minutes).padStart(2, '0')}:{String(time.seconds).padStart(2, '0')} left
+              {String(localTime.minutes).padStart(2, '0')}:
+              {String(localTime.seconds).padStart(2, '0')} left
             </div>
             <div className="flex items-center space-x-1">
               <GiDistraction className="text-bright-green opacity-50" size={16} />

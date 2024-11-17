@@ -30,7 +30,10 @@ if (process.contextIsolated) {
             'request-goals-state',
             'update-goals-state',
             'ping',
-            'toggle'
+            'toggle',
+            'timer-update',
+            'request-timer-state',
+            'timer-state-update'
           ]
           if (validChannels.includes(channel)) {
             ipcRenderer.send(channel, data)
@@ -49,7 +52,10 @@ if (process.contextIsolated) {
             'request-goals-state',
             'goals-state-update',
             'ping',
-            'toggle'
+            'timer-update',
+            'toggle',
+            'request-timer-state',
+            'timer-state-update'
           ]
           if (validChannels.includes(channel)) {
             ipcRenderer.on(channel, (_, ...args) => func(...args))

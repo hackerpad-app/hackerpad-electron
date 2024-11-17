@@ -107,7 +107,18 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .toString()
       .padStart(2, '0')}`
     window.api.updateTrayTimer(formattedTime)
-  }, [time.minutes, time.seconds])
+
+    // Add console.log to debug
+    console.log('Timer updated:', time)
+
+    // Send timer update to main process
+    window.electron.ipcRenderer.send('timer-update', {
+      minutes: time.minutes,
+      seconds: time.seconds,
+      isBreak: isBreak,
+      sessionClockTicking: sessionClockTicking
+    })
+  }, [time.minutes, time.seconds, isBreak, sessionClockTicking])
 
   const value = {
     time,

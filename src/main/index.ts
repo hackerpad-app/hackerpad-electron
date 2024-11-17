@@ -10,6 +10,11 @@ let tray: Tray | null = null
 let isQuitting = false
 let trayText = 'Hi'
 
+let timerState = {
+  minutes: 0,
+  seconds: 0
+}
+
 interface GoalsState {
   distractions: Distraction[]
   goals: Goal[]
@@ -359,4 +364,14 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   isQuitting = true
+})
+
+ipcMain.on('timer-update', (_event, newTime) => {
+  timerState = newTime
+  // Broadcast to goals window
+  goalsWindow?.webContents.send('timer-state-update', timerState)
+})
+
+ipcMain.on('request-timer-state', (event) => {
+  event.reply('timer-state-update', timerState)
 })
