@@ -22,6 +22,14 @@ export default defineConfig({
       }
     },
     publicDir: 'src/renderer/src/assets',
-    plugins: [react()]
+    plugins: [react()],
+    build: {
+      rollupOptions: {
+        input: {
+          main: resolve('src/renderer/index.html'),
+          movableGoals: resolve('src/renderer/movable-goals.html')
+        }
+      }
+    }
   }
 })

@@ -6,7 +6,6 @@ const TrayStatusManager: React.FC = () => {
 
   useEffect(() => {
     const status = sessionClockTicking ? (isBreak ? 'Break' : 'Work') : ''
-    console.log('Sending status:', status)
     window.electron.ipcRenderer.send('update-tray-text', status)
   }, [sessionClockTicking, isBreak])
 

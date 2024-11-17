@@ -15,22 +15,30 @@ const CompletedSessionGoals: React.FC<CompletedSessionGoalsProps> = ({ noteId })
 
   const filteredSessions = completedSessions.filter((session) => session.noteId === noteId)
 
-  const totalCompletedGoals = filteredSessions.reduce(
+  // Hacky, find the core issue; without that, it triples each session
+  const uniqueSessions = filteredSessions.reduce((acc, current) => {
+    if (!acc.find((session) => session.id === current.id)) {
+      acc.push(current)
+    }
+    return acc
+  }, [] as Session[])
+
+  const totalCompletedGoals = uniqueSessions.reduce(
     (total, session) => total + session.goals.filter((goal) => goal.finished).length,
     0
   )
-  const totalGoals = filteredSessions.reduce((total, session) => total + session.goals.length, 0)
+  const totalGoals = uniqueSessions.reduce((total, session) => total + session.goals.length, 0)
 
   const finishRate = totalGoals > 0 ? (totalCompletedGoals / totalGoals) * 100 : 0
   const formattedFinishRate = finishRate.toFixed(1)
 
-  const lastSession = filteredSessions[filteredSessions.length - 1]
+  const lastSession = uniqueSessions[uniqueSessions.length - 1]
   const daySummary = lastSession?.daySummary
 
   return (
     <>
       <div className="flex flex-wrap gap-2 p-5 items-center">
-        {filteredSessions.map((session) => (
+        {uniqueSessions.map((session) => (
           <SessionPin
             key={session.id}
             session={session}
@@ -42,7 +50,7 @@ const CompletedSessionGoals: React.FC<CompletedSessionGoalsProps> = ({ noteId })
           />
         ))}
 
-        {filteredSessions.length > 0 && (
+        {uniqueSessions.length > 0 && (
           <div className="text-opacity-75 text-sm text-gray-400">
             <span className="ml-2">{formattedFinishRate}% tasks finished </span>
           </div>

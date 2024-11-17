@@ -50,27 +50,27 @@
 }
 
 .prose h1 {
-  color: #F7F8FA;
+  color: #f7f8fa;
   font-size: 32px;
 }
 
 .prose h2 {
-  color: #F7F8FA;
+  color: #f7f8fa;
   font-size: 24px;
 }
 
 .prose h3 {
-  color: #F7F8FA;
+  color: #f7f8fa;
   font-size: 18px;
 }
 
 .prose h4 {
-  color: #F7F8FA;
+  color: #f7f8fa;
   font-size: 12px;
 }
 
 .prose p {
-  color: #F7F8FA;
+  color: #f7f8fa;
   line-height: 1.5;
 }
 
@@ -207,4 +207,11 @@
   background-color: rgba(22, 163, 74, 0.5);
   border-radius: 3px;
   border: transparent;
+}
+
+/* Add these styles */
+html,
+body {
+  background: transparent !important;
+  overflow: hidden;
 }
