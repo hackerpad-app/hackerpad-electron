@@ -11,7 +11,6 @@ const SessionGoalsWindow: React.FC = () => {
 
   const handleTransition = (): void => {
     transitionToMovableWindow()
-    window.electron.ipcRenderer.send('show-goals-window')
   }
 
   useEffect(() => {

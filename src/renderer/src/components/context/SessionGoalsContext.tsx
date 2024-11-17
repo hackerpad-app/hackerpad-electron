@@ -1,6 +1,16 @@
 import * as React from 'react'
-import { createContext, useState, useContext, ReactNode, useCallback } from 'react'
+import { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
+
+export interface Session {
+  id: string
+  noteId: string
+  startTime: string
+  endTime: string | null
+  goals: Goal[]
+  distractions: Distraction[]
+  daySummary?: string
+}
 
 export interface Goal {
   id: string
@@ -13,21 +23,10 @@ export interface Distraction {
   text: string
 }
 
-export interface Session {
-  id: string
-  noteId: string
-  startTime: string
-  endTime: string | null
-  goals: Goal[]
-  distractions: Distraction[]
-  daySummary?: string
-}
-
 interface SessionGoalsContextType {
   currentSession: Session | null
   completedSessions: Session[]
   addGoal: (text: string) => void
-  toggleGoalStatus: (id: string) => void
   showGoalsWindow: boolean
   setShowGoalsWindow: React.Dispatch<React.SetStateAction<boolean>>
   showMovableGoalsWindow: boolean
@@ -35,8 +34,8 @@ interface SessionGoalsContextType {
   transitionToMovableWindow: () => void
   startNewSession: (noteId: string) => void
   endCurrentSession: () => void
-  addDistraction: (text: string) => void
   setDaySummary: (summary: string) => void
+  setCurrentSession: React.Dispatch<React.SetStateAction<Session | null>>
 }
 
 const SessionGoalsContext = createContext<SessionGoalsContextType | undefined>(undefined)
@@ -47,45 +46,41 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [showGoalsWindow, setShowGoalsWindow] = useState(false)
   const [showMovableGoalsWindow, setShowMovableGoalsWindow] = useState(false)
 
+  useEffect(() => {
+    const handleGoalsUpdate = (data: { goals: Goal[]; distractions: Distraction[] }): void => {
+      if (currentSession) {
+        setCurrentSession((prev) => ({
+          ...prev!,
+          goals: data.goals || prev!.goals,
+          distractions: data.distractions || prev!.distractions
+        }))
+      }
+    }
+
+    window.electron.ipcRenderer.on('goals-state-update', handleGoalsUpdate)
+
+    return (): void => {
+      window.electron.ipcRenderer.removeListener('goals-state-update', handleGoalsUpdate)
+    }
+  }, [currentSession])
+
   const addGoal = useCallback(
     (text: string): void => {
-      console.log('Adding goal:', text)
       if (currentSession) {
-        console.log('to note-id', currentSession.noteId)
         const newGoal = { id: uuidv4(), text, finished: false }
-        setCurrentSession((prevSession) => ({
-          ...prevSession!,
-          goals: [...prevSession!.goals, newGoal]
-        }))
-      } else {
-        console.warn('Attempted to add a goal without an active session')
-      }
-    },
-    [currentSession]
-  )
+        setCurrentSession((prevSession) => {
+          const updatedSession = {
+            ...prevSession!,
+            goals: [...prevSession!.goals, newGoal]
+          }
 
-  const toggleGoalStatus = useCallback(
-    (id: string): void => {
-      if (currentSession) {
-        setCurrentSession((prevSession) => ({
-          ...prevSession!,
-          goals: prevSession!.goals.map((goal) =>
-            goal.id === id ? { ...goal, finished: !goal.finished } : goal
-          )
-        }))
-      }
-    },
-    [currentSession]
-  )
+          window.electron.ipcRenderer.send('update-goals-state', {
+            type: 'add-goal',
+            goals: updatedSession.goals
+          })
 
-  const addDistraction = useCallback(
-    (text: string): void => {
-      if (currentSession) {
-        const newDistraction: Distraction = { id: uuidv4(), text }
-        setCurrentSession((prevSession) => ({
-          ...prevSession!,
-          distractions: [...prevSession!.distractions, newDistraction]
-        }))
+          return updatedSession
+        })
       }
     },
     [currentSession]
@@ -93,7 +88,7 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   const transitionToMovableWindow = useCallback((): void => {
     setShowGoalsWindow(false)
-    setShowMovableGoalsWindow(true)
+    window.electron.ipcRenderer.send('show-goals-window')
   }, [])
 
   const startNewSession = useCallback((noteId: string) => {
@@ -136,7 +131,6 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
         currentSession,
         completedSessions,
         addGoal,
-        toggleGoalStatus,
         showGoalsWindow,
         setShowGoalsWindow,
         showMovableGoalsWindow,
@@ -144,8 +138,8 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
         transitionToMovableWindow,
         startNewSession,
         endCurrentSession,
-        addDistraction,
-        setDaySummary
+        setDaySummary,
+        setCurrentSession
       }}
     >
       {children}

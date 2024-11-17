@@ -28,7 +28,7 @@ const SessionTimer: React.FC<SessionTimerProps> = ({
     resetTimer
   } = useTimer()
 
-  const { setShowGoalsWindow, setShowMovableGoalsWindow } = useSessionGoals()
+  const { setShowGoalsWindow } = useSessionGoals()
   const { isCurrentDaybookFinished } = useNotesContext()
 
   const canStartTimer =
@@ -48,7 +48,7 @@ const SessionTimer: React.FC<SessionTimerProps> = ({
   useEffect(() => {
     if (!sessionClockTicking) {
       setShowGoalsWindow(false)
-      setShowMovableGoalsWindow(false)
+      //setShowMovableGoalsWindow(false)
       window.electron.ipcRenderer.send('hide-goals-window')
     }
   }, [sessionClockTicking])

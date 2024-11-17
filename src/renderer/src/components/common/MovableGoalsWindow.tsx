@@ -11,16 +11,44 @@ const LargeGoalsView: React.FC<{ onShrink: () => void; goalWidth: string }> = ({
   onShrink,
   goalWidth
 }) => {
-  const { currentSession, toggleGoalStatus } = useSessionGoals()
+  const { currentSession } = useSessionGoals()
+
+  // Add debug logging
+  useEffect(() => {
+    console.log('Current session goals:', currentSession?.goals)
+  }, [currentSession?.goals])
+
+  // Create a map to track seen IDs
+  const seenIds = new Set<string>()
+
+  // Filter out duplicates while maintaining order
+  const uniqueGoals =
+    currentSession?.goals.filter((goal) => {
+      if (seenIds.has(goal.id)) {
+        console.warn('Duplicate goal ID detected:', goal.id)
+        return false
+      }
+      seenIds.add(goal.id)
+      return true
+    }) || []
 
   const handleGoalToggle = (goalId: string): void => {
-    const goal = currentSession?.goals.find((g) => g.id === goalId)
-    if (goal && !goal.finished) {
-      const audio = new Audio(dingSound)
-      audio.volume = 0.05
-      audio.play().catch((error) => console.error('Error playing sound:', error))
+    try {
+      const goal = currentSession?.goals.find((g) => g.id === goalId)
+
+      if (goal && !goal.finished) {
+        const audio = new Audio(dingSound)
+        audio.volume = 1.0
+        audio.play().catch((error) => alert('Sound error: ' + error))
+      }
+
+      window.electron.ipcRenderer.send('update-goals-state', {
+        type: 'change-goal-status',
+        goalId: goalId
+      })
+    } catch (error) {
+      alert('Error: ' + error)
     }
-    toggleGoalStatus(goalId)
   }
 
   return (
@@ -39,11 +67,11 @@ const LargeGoalsView: React.FC<{ onShrink: () => void; goalWidth: string }> = ({
           className="w-full max-h-full overflow-y-auto pr-2 py-2"
           style={{ minWidth: goalWidth }}
         >
-          {!currentSession || currentSession.goals.length === 0 ? (
+          {!currentSession || uniqueGoals.length === 0 ? (
             <p className="text-bright-green text-lg text-center">No goals added.</p>
           ) : (
             <div className="space-y-1">
-              {currentSession.goals.map((goal) => (
+              {uniqueGoals.map((goal) => (
                 <div
                   key={goal.id}
                   className="bg-macdonalds-shit bg-opacity-75 rounded-lg p-1 shadow-sm flex items-center justify-between w-full"
@@ -83,20 +111,50 @@ const MovableGoalsWindow: React.FC = () => {
   const [distractions, setDistractions] = useState<string[]>([])
   const [currentDistraction, setCurrentDistraction] = useState('')
   const { time } = useTimer()
-  const { addDistraction, currentSession } = useSessionGoals()
+  const { currentSession, setCurrentSession } = useSessionGoals()
 
   useEffect(() => {
-    // Set up IPC listeners for window state
-    window.electron.ipcRenderer.on('goals-updated', (data) => {
-      // Handle goals updates from main window
-      console.log('Goals updated:', data)
+    // On the event of a goals state update, update the list of goals
+
+    window.electron.ipcRenderer.on('goals-state-update', (data: any) => {
+      console.log('Received goals state update:', data)
+
+      if (data.distractions) setDistractions(data.distractions)
+      if (data.goals && currentSession) {
+        console.log('Updating existing session with goals:', data.goals)
+        const updatedSession = {
+          ...currentSession,
+          goals: data.goals
+        }
+        setCurrentSession(updatedSession)
+      } else if (data.goals && !currentSession) {
+        console.log('Creating new session with goals:', data.goals)
+        setCurrentSession({
+          id: 'temp-id',
+          noteId: 'temp-note-id',
+          startTime: new Date().toISOString(),
+          endTime: null,
+          goals: data.goals,
+          distractions: data.distractions || []
+        })
+      }
     })
-  }, [])
+
+    // Request initial state when component mounts
+    window.electron.ipcRenderer.send('request-goals-state')
+
+    // Send current session goals to main process whenever they change
+    if (currentSession) {
+      window.electron.ipcRenderer.send('update-goals-state', {
+        type: 'add-goal',
+        goals: currentSession.goals
+      })
+    }
+  }, [currentSession?.goals, distractions])
 
   const toggleSize = (): void => {
     setIsLarge(!isLarge)
-    // Notify main process about size change
-    window.electron.ipcRenderer.send('toggle-goals-window-size', !isLarge)
+    window.electron.ipcRenderer.send('change-goals-window-size', !isLarge)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -106,8 +164,12 @@ const MovableGoalsWindow: React.FC = () => {
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault()
     if (currentDistraction.trim()) {
-      setDistractions([...distractions, currentDistraction.trim()])
-      addDistraction(currentDistraction.trim())
+      const newDistraction = currentDistraction.trim()
+      setDistractions([...distractions, newDistraction])
+      window.electron.ipcRenderer.send('update-goals-state', {
+        type: 'add-distraction',
+        distraction: newDistraction
+      })
       setCurrentDistraction('')
     }
   }

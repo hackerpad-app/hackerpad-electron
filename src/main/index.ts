@@ -3,18 +3,47 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
-let mainWindow: BrowserWindow | null = null
-let goalsWindow: BrowserWindow | null = null
+let mainWindow: BrowserWindow
+let goalsWindow: BrowserWindow
 
 let tray: Tray | null = null
 let isQuitting = false
 let trayText = 'Hi'
 
+interface GoalsState {
+  distractions: Distraction[]
+  goals: Goal[]
+  time: { minutes: number; seconds: number }
+}
+
+interface Goal {
+  id: string
+  text: string
+  finished: boolean
+}
+
+interface Distraction {
+  id: string
+  text: string
+}
+
+const goalsState: GoalsState = {
+  distractions: [],
+  goals: [],
+  time: { minutes: 0, seconds: 0 }
+}
+
 ipcMain.on('show-goals-window', () => {
+  console.log('Received show-goals-window message')
   if (!goalsWindow) {
+    console.log('Creating new goals window')
     createGoalsWindow(mainWindow)
+  } else {
+    console.log('Showing existing goals window')
+    goalsWindow.show()
+    goalsWindow.setAlwaysOnTop(true, 'screen-saver', 1)
+    goalsWindow.moveTop()
   }
-  goalsWindow?.show()
 })
 
 ipcMain.on('hide-goals-window', () => {
@@ -58,8 +87,6 @@ function createGoalsWindow(parentWindow: BrowserWindow): void {
     return
   }
 
-  const isFullScreen = parentWindow.isFullScreen()
-
   goalsWindow = new BrowserWindow({
     width: 400,
     height: 48,
@@ -92,7 +119,6 @@ function createGoalsWindow(parentWindow: BrowserWindow): void {
   }
 
   goalsWindow.setAlwaysOnTop(true, 'screen-saver', 1)
-
   goalsWindow.setWindowButtonVisibility(false)
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
@@ -101,15 +127,11 @@ function createGoalsWindow(parentWindow: BrowserWindow): void {
     goalsWindow.loadFile(join(__dirname, '../renderer/movable-goals.html'))
   }
 
-  // Position relative to parent initially and handle fullscreen
+  // Handle the goals window position and visibility
   goalsWindow.once('ready-to-show', () => {
     if (parentWindow && !parentWindow.isDestroyed()) {
-      // Get all displays
       const displays = require('electron').screen.getAllDisplays()
-      // Use primary display for initial positioning
       const primaryDisplay = displays[0]
-
-      // Position in the center of the primary display
       const { workArea } = primaryDisplay
       goalsWindow?.setPosition(workArea.x + workArea.width / 2 - 200, workArea.y + 100)
       goalsWindow?.show()
@@ -140,7 +162,7 @@ function createGoalsWindow(parentWindow: BrowserWindow): void {
     goalsWindow = null
   })
 
-  ipcMain.on('toggle-goals-window-size', (_, isLarge) => {
+  ipcMain.on('change-goals-window-size', (_, isLarge) => {
     if (goalsWindow) {
       if (isLarge) {
         goalsWindow.setSize(400, 300)
@@ -167,7 +189,7 @@ function createWindow(): void {
   // Create tray after window is created
   createTray(mainWindow)
 
-  ipcMain.on('toggle-goals-window-size', (_, isLarge) => {
+  ipcMain.on('change-goals-window-size', (_, isLarge) => {
     if (goalsWindow) {
       if (isLarge) {
         goalsWindow.setSize(400, 300)
@@ -177,7 +199,7 @@ function createWindow(): void {
     }
   })
 
-  // Set up IPC listener for timer updates
+  // Deal with the tray
   ipcMain.on('update-tray-timer', (_event, time: string) => {
     if (tray) {
       const displayTime =
@@ -186,14 +208,13 @@ function createWindow(): void {
     }
   })
 
-  // New IPC listener for updating the text
   ipcMain.on('update-tray-text', (_event, text: string) => {
     trayText = text
     // Trigger a refresh of the tray title if needed
     mainWindow.webContents.send('request-timer-update')
   })
 
-  // Add IPC handlers for window communication
+  // Deal with IP communcation between the two windows
   ipcMain.on('show-goals-window', () => {
     goalsWindow?.show()
   })
@@ -202,16 +223,46 @@ function createWindow(): void {
     goalsWindow?.hide()
   })
 
-  // Add handler for goals data
-  ipcMain.on('update-goals', (event, goalsData) => {
-    // Forward goals data to main window
-    mainWindow.webContents.send('goals-updated', goalsData)
+  ipcMain.on('request-goals-state', (event) => {
+    event.reply('goals-state-update', goalsState)
   })
 
-  console.log('mainWindow', mainWindow)
+  ipcMain.on('update-goals-state', (event, newState: any) => {
+    console.log('Main process received update-goals-state. Type:', newState.type)
+
+    try {
+      switch (newState.type) {
+        case 'add-goal':
+          console.log('Processing add-goal:', newState.goals)
+          goalsState.goals = newState.goals
+          break
+
+        case 'add-distraction':
+          console.log('Processing add-distraction:', newState.distraction)
+          goalsState.distractions = [...goalsState.distractions, newState.distraction]
+          break
+
+        case 'change-goal-status':
+          console.log('Processing change-goal-status for goal:', newState.goalId)
+          goalsState.goals = goalsState.goals.map((goal) =>
+            goal.id === newState.goalId ? { ...goal, finished: !goal.finished } : goal
+          )
+          break
+
+        default:
+          console.warn('Unknown state update type:', newState.type)
+      }
+
+      // Broadcast updates to all windows
+      mainWindow?.webContents.send('goals-state-update', goalsState)
+      goalsWindow?.webContents.send('goals-state-update', goalsState)
+    } catch (error) {
+      console.error('Error processing update-goals-state:', error)
+    }
+  })
+
   // Modify window close behavior
   mainWindow.on('close', (event) => {
-    console.log('close', isQuitting)
     if (!isQuitting) {
       console.log('preventing default')
       event.preventDefault()
@@ -220,11 +271,7 @@ function createWindow(): void {
     return false
   })
 
-  // Load the index.html file
   mainWindow.loadFile('index.html')
-
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools()
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -234,6 +281,9 @@ function createWindow(): void {
     shell.openExternal(details.url)
     return { action: 'deny' }
   })
+
+  // [debugging]; open the dev tools
+  mainWindow.webContents.openDevTools()
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
@@ -258,8 +308,9 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  ipcMain.on('ping', () => {
+    console.log('Main process received ping')
+  })
 
   createWindow()
 
@@ -282,6 +333,3 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   isQuitting = true
 })
-
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here
