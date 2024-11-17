@@ -101,6 +101,10 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
       distractions: []
     }
     setCurrentSession(newSession)
+
+    window.electron.ipcRenderer.send('update-goals-state', {
+      type: 'init-session'
+    })
   }, [])
 
   const endCurrentSession = useCallback((): void => {

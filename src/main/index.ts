@@ -256,14 +256,18 @@ function createWindow(): void {
 
     try {
       switch (newState.type) {
+        case 'init-session':
+          goalsState.goals = []
+          goalsState.distractions = []
+          break
+
         case 'add-goal':
           console.log('Processing add-goal:', newState.goals)
           goalsState.goals = newState.goals
           break
 
         case 'add-distraction':
-          console.log('Processing add-distraction:', newState.distraction)
-          goalsState.distractions = [...goalsState.distractions, newState.distraction]
+          goalsState.distractions = newState.distractions
           break
 
         case 'change-goal-status':
@@ -271,12 +275,6 @@ function createWindow(): void {
           goalsState.goals = goalsState.goals.map((goal) =>
             goal.id === newState.goalId ? { ...goal, finished: !goal.finished } : goal
           )
-          break
-
-        case 'end-session':
-          console.log('Ending session, resetting goals and distractions')
-          goalsState.goals = []
-          goalsState.distractions = []
           break
 
         default:
@@ -294,7 +292,6 @@ function createWindow(): void {
   // Modify window close behavior
   mainWindow.on('close', (event) => {
     if (!isQuitting) {
-      console.log('preventing default')
       event.preventDefault()
       mainWindow.hide()
     }

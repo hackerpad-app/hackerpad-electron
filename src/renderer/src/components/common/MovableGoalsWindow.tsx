@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTimer } from '../context/TimeContext'
 import { useSessionGoals } from '../context/SessionGoalsContext'
 import { SlArrowRight, SlArrowLeft } from 'react-icons/sl'
@@ -102,41 +102,41 @@ const LargeGoalsView: React.FC<{ onShrink: () => void; goalWidth: string }> = ({
 
 const MovableGoalsWindow: React.FC = () => {
   const [isLarge, setIsLarge] = useState(false)
-  const [distractions, setDistractions] = useState<string[]>([])
   const [currentDistraction, setCurrentDistraction] = useState('')
   const { time } = useTimer()
   const { currentSession, setCurrentSession } = useSessionGoals()
 
   useEffect(() => {
-    // On the event of a goals state update, update the list of goals
-
-    window.electron.ipcRenderer.on('goals-state-update', (data: any) => {
-      console.log('Received goals state update:', data)
-
-      if (data.distractions) setDistractions(data.distractions)
+    const handleGoalsStateUpdate = (data: any): void => {
       if (data.goals && currentSession) {
-        console.log('Updating existing session with goals:', data.goals)
         const updatedSession = {
           ...currentSession,
-          goals: data.goals
+          goals: data.goals,
+          distractions: data.distractions
         }
         setCurrentSession(updatedSession)
       } else if (data.goals && !currentSession) {
-        console.log('Creating new session with goals:', data.goals)
         setCurrentSession({
           id: 'temp-id',
           noteId: 'temp-note-id',
           startTime: new Date().toISOString(),
           endTime: null,
-          goals: data.goals,
-          distractions: data.distractions || []
+          goals: [],
+          distractions: []
         })
       }
-    })
+    }
+
+    // Add event listener
+    window.electron.ipcRenderer.on('goals-state-update', handleGoalsStateUpdate)
 
     // Request initial state when component mounts
     window.electron.ipcRenderer.send('request-goals-state')
-  }, [currentSession?.goals, distractions])
+
+    return (): void => {
+      window.electron.ipcRenderer.removeListener('goals-state-update', handleGoalsStateUpdate)
+    }
+  }, []) // Empty dependency array since we handle currentSession inside the callback
 
   const toggleSize = (): void => {
     setIsLarge(!isLarge)
@@ -147,18 +147,30 @@ const MovableGoalsWindow: React.FC = () => {
     setCurrentDistraction(e.target.value)
   }
 
-  const handleSubmit = (e: React.FormEvent): void => {
-    e.preventDefault()
-    if (currentDistraction.trim()) {
-      const newDistraction = currentDistraction.trim()
-      setDistractions([...distractions, newDistraction])
-      window.electron.ipcRenderer.send('update-goals-state', {
-        type: 'add-distraction',
-        distraction: newDistraction
-      })
+  const addDistraction = useCallback(
+    (e: React.FormEvent<HTMLFormElement>): void => {
+      e.preventDefault()
+      if (currentSession) {
+        const newDistraction = {
+          id: crypto.randomUUID(),
+          text: currentDistraction
+        }
+        setCurrentSession((prevSession) => {
+          const updatedSession = {
+            ...prevSession!,
+            distractions: [...prevSession!.distractions, newDistraction]
+          }
+          window.electron.ipcRenderer.send('update-goals-state', {
+            type: 'add-distraction',
+            distractions: updatedSession.distractions
+          })
+          return updatedSession
+        })
+      }
       setCurrentDistraction('')
-    }
-  }
+    },
+    [currentSession, currentDistraction]
+  )
 
   const maxGoalLength =
     currentSession?.goals.reduce((max, goal) => Math.max(max, goal.text.length), 0) || 0
@@ -193,10 +205,10 @@ const MovableGoalsWindow: React.FC = () => {
             </div>
             <div className="flex items-center space-x-1">
               <GiDistraction className="text-bright-green opacity-50" size={16} />
-              <span className="text-sm font-bold">{distractions.length}</span>
+              <span className="text-sm font-bold">{currentSession?.distractions.length || 0}</span>
             </div>
             <form
-              onSubmit={handleSubmit}
+              onSubmit={(e) => addDistraction(e)}
               className="flex-grow max-w-[40%]"
               style={{ WebkitAppRegion: 'no-drag' }}
             >
