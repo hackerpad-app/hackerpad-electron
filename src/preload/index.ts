@@ -32,9 +32,7 @@ if (process.contextIsolated) {
             'ping',
             'toggle'
           ]
-          console.log('Preload received send request:', { channel, data })
           if (validChannels.includes(channel)) {
-            console.log('Channel is valid, sending to main process')
             ipcRenderer.send(channel, data)
           } else {
             console.warn('Invalid channel in preload:', channel)
