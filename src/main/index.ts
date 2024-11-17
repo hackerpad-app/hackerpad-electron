@@ -111,17 +111,19 @@ function createGoalsWindow(parentWindow: BrowserWindow): void {
       nodeIntegration: true,
       contextIsolation: true,
       enablePreferredSizeMode: true
-    }
+    },
+    type: 'panel'
   })
 
   if (process.platform === 'darwin') {
     goalsWindow.setVisibleOnAllWorkspaces(true, {
       visibleOnFullScreen: true,
-      skipTransformProcessType: true
+      skipTransformProcessType: false
     })
+    goalsWindow.setWindowButtonVisibility(false)
   }
 
-  goalsWindow.setAlwaysOnTop(true, 'screen-saver', 1)
+  goalsWindow.setAlwaysOnTop(true, 'screen-saver', 2)
   goalsWindow.setWindowButtonVisibility(false)
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
