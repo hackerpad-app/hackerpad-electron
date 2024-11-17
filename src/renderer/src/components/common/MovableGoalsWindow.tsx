@@ -127,22 +127,15 @@ const MovableGoalsWindow: React.FC = () => {
       }
     }
 
-    // Add event listener
     window.electron.ipcRenderer.on('goals-state-update', handleGoalsStateUpdate)
-
-    // Request initial state when component mounts
     window.electron.ipcRenderer.send('request-goals-state')
 
-    // Listen for timer updates from the main process
     window.electron.ipcRenderer.on('timer-state-update', (newTime: any) => {
-      console.log('Goals window received timer update:', newTime)
       setLocalTime(newTime)
     })
 
-    // Request initial timer state
     window.electron.ipcRenderer.send('request-timer-state')
 
-    // Periodically request timer state to ensure sync
     const intervalId = setInterval(() => {
       window.electron.ipcRenderer.send('request-timer-state')
     }, 1000)
@@ -152,7 +145,7 @@ const MovableGoalsWindow: React.FC = () => {
       window.electron.ipcRenderer.removeListener('timer-state-update', setLocalTime)
       clearInterval(intervalId)
     }
-  }, []) // Empty dependency array since we handle currentSession inside the callback
+  }, [])
 
   const toggleSize = (): void => {
     setIsLarge(!isLarge)

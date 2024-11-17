@@ -1,7 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
-// Add this at the top level for debugging
 console.log('Preload script is loading...')
 
 // Custom APIs for renderer

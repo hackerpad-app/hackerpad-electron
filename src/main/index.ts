@@ -39,12 +39,9 @@ const goalsState: GoalsState = {
 }
 
 ipcMain.on('show-goals-window', () => {
-  console.log('Received show-goals-window message')
   if (!goalsWindow) {
-    console.log('Creating new goals window')
     createGoalsWindow(mainWindow)
   } else {
-    console.log('Showing existing goals window')
     goalsWindow.show()
     goalsWindow.setAlwaysOnTop(true, 'screen-saver', 1)
     goalsWindow.moveTop()
@@ -257,8 +254,6 @@ function createWindow(): void {
   })
 
   ipcMain.on('update-goals-state', (event, newState: any) => {
-    console.log('Main process received update-goals-state. Type:', newState.type)
-
     try {
       switch (newState.type) {
         case 'init-session':
@@ -267,7 +262,6 @@ function createWindow(): void {
           break
 
         case 'add-goal':
-          console.log('Processing add-goal:', newState.goals)
           goalsState.goals = newState.goals
           break
 
@@ -276,7 +270,6 @@ function createWindow(): void {
           break
 
         case 'change-goal-status':
-          console.log('Processing change-goal-status for goal:', newState.goalId)
           goalsState.goals = goalsState.goals.map((goal) =>
             goal.id === newState.goalId ? { ...goal, finished: !goal.finished } : goal
           )
