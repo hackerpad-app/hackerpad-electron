@@ -100,14 +100,15 @@ function createGoalsWindow(parentWindow: BrowserWindow): void {
     movable: true,
     alwaysOnTop: true,
     skipTaskbar: true,
-    focusable: false,
+    focusable: true,
     hasShadow: false,
     fullscreenable: false,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
       nodeIntegration: true,
-      contextIsolation: true
+      contextIsolation: true,
+      enablePreferredSizeMode: true
     }
   })
 
@@ -169,6 +170,29 @@ function createGoalsWindow(parentWindow: BrowserWindow): void {
       } else {
         goalsWindow.setSize(400, 48)
       }
+    }
+  })
+
+  // Add focus handling
+  ipcMain.on('focus-window', () => {
+    if (goalsWindow && !goalsWindow.isDestroyed()) {
+      goalsWindow.webContents.focus()
+      goalsWindow.moveTop()
+    }
+  })
+
+  // Remove the existing focus handlers and replace with this:
+  goalsWindow.on('blur', () => {
+    // Prevent the window from losing focus
+    if (goalsWindow && !goalsWindow.isDestroyed()) {
+      goalsWindow.webContents.focus()
+    }
+  })
+
+  // Add this to ensure the window stays focused when shown
+  goalsWindow.on('show', () => {
+    if (goalsWindow && !goalsWindow.isDestroyed()) {
+      goalsWindow.webContents.focus()
     }
   })
 }
@@ -247,6 +271,12 @@ function createWindow(): void {
           goalsState.goals = goalsState.goals.map((goal) =>
             goal.id === newState.goalId ? { ...goal, finished: !goal.finished } : goal
           )
+          break
+
+        case 'end-session':
+          console.log('Ending session, resetting goals and distractions')
+          goalsState.goals = []
+          goalsState.distractions = []
           break
 
         default:
