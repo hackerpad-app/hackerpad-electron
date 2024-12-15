@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -202,11 +202,23 @@ function createGoalsWindow(parentWindow: BrowserWindow): void {
 }
 
 function createWindow(): void {
+  // Get the primary display's width
+  const primaryDisplay = screen.getPrimaryDisplay()
+  const screenWidth = primaryDisplay.workAreaSize.width
+  const windowWidth = screenWidth / 4
+
   mainWindow = new BrowserWindow({
-    width: 900,
+    width: windowWidth,
+    minWidth: windowWidth,
+    maxWidth: windowWidth,
     height: 670,
+    minHeight: 150,
     show: false,
     autoHideMenuBar: true,
+    alwaysOnTop: true,
+    fullscreenable: false,
+    resizable: true,
+    type: 'panel',
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
