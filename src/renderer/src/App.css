@@ -215,3 +215,11 @@ body {
   background: transparent !important;
   overflow: hidden;
 }
+
+.titlebar {
+  -webkit-app-region: drag;
+}
+
+.non-draggable {
+  -webkit-app-region: no-drag;
+}

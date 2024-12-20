@@ -9,10 +9,10 @@ interface DaybookProps {
 export default function Daybook({ pad, setPad }: DaybookProps) {
   return (
     <div className="flex h-screen ">
-      <div className="flex w-1/5 overflow-hidden h-full">
+      {/* <div className="flex w-1/5 overflow-hidden h-full">
         <Sidebar pad={pad} setPad={setPad} />
-      </div>
-      <div className="flex w-4/5 overflow-y-auto custom-scrollbar bg-dark-green h-full">
+      </div> */}
+      <div className="flex w-full overflow-y-auto custom-scrollbar bg-dark-green h-full">
         <Editor pad={pad} />
       </div>
     </div>

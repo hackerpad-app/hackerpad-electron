@@ -210,9 +210,11 @@ function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: windowWidth,
     minWidth: windowWidth,
-    maxWidth: windowWidth,
+    frame: false,
+    titleBarStyle: 'hidden',
+    maxWidth: 450,
     height: 670,
-    minHeight: 150,
+    minHeight: 450,
     show: false,
     autoHideMenuBar: true,
     alwaysOnTop: true,
@@ -223,7 +225,9 @@ function createWindow(): void {
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
-    }
+    },
+    transparent: true,
+    movable: true
   })
 
   // Create tray after window is created

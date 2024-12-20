@@ -155,18 +155,6 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
         <div className="-nowrap relative">
           <EditorContent editor={headlineEditor} />
         </div>
-        <div className="mr-5 text-gray-400">
-          {displayedNote?.updated_at
-            ? `${new Date(displayedNote.updated_at).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-              })}`
-            : ''}
-        </div>{' '}
       </div>
       <div className="mb-4">
         {pad === 'daybook' && displayedNote && <CompletedSessionGoals noteId={displayedNote.id} />}
