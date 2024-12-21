@@ -1,69 +1,27 @@
 import React, { useState } from 'react'
-import { PiNotePencilLight } from 'react-icons/pi'
-import { AiOutlineDelete } from 'react-icons/ai'
-import { useNotesContext } from './../context/NotesContext'
 
-import DaybookSummaryModal from './DaybookSummaryModal'
-import { useSessionGoals } from '../context/SessionGoalsContext'
-import { PiCalendarCheckThin } from 'react-icons/pi'
-import DeleteNoteModal from './DeleteNoteModal'
-import NoteStartModal from './modals/NoteStartModal'
+import { GiPlasticDuck } from 'react-icons/gi'
+import { CiSquarePlus, CiViewList, CiPlay1, CiStop1, CiUndo } from 'react-icons/ci'
 
 interface ToolsProps {
-  pad: string
+  // TODO: Implement props
 }
 
-const Tools = ({ pad }: ToolsProps): React.ReactNode => {
-  const {
-    createNote,
-    deleteNote,
-    searchSidebarNotes,
-    displayedNoteDaybook,
-    displayedNoteNotes,
-    duplicateNote
-  } = useNotesContext()
+const Tools = (ToolsProps): React.ReactNode => {
 
-  const [isModalVisible, setIsModalVisible] = useState(false)
-  const [headlineInput, setHeadlineInput] = useState('')
-  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false)
-  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false)
-  const { setDaySummary } = useSessionGoals()
   const [isHovering, setIsHovering] = useState(false)
+  const [isControlsHovering, setIsControlsHovering] = useState(false)
 
-  const handleCreateNote = (): void => {
-    if (pad === 'notes') {
-      setIsModalVisible(true)
-    } else {
-      createNote(pad)
-    }
+  const handleDuck = (): void => {
+    // TODO: Implement duck
   }
 
-  const handleModalSubmit = async (): Promise<void> => {
-    try {
-      await createNote(pad, headlineInput)
-      setIsModalVisible(false)
-    } catch (error) {
-      console.error(error)
-    }
+  const handleAddNote = (): void => {
+    // TODO: Implement add note
   }
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    searchSidebarNotes(event.target.value)
-  }
-
-  const handleFinishDaybook = (): void => {
-    if (displayedNoteDaybook) {
-      setIsSummaryModalOpen(true)
-    }
-  }
-
-  const handleSaveSummary = (summary: string): void => {
-    setDaySummary(summary)
-  }
-
-  const handleDeleteNote = (): void => {
-    deleteNote(pad)
-    setDeleteModalOpen(false)
+  const handleOpenListView = (): void => {
+    // TODO: Implement open list view
   }
 
   return (
@@ -72,54 +30,59 @@ const Tools = ({ pad }: ToolsProps): React.ReactNode => {
       onMouseLeave={() => setIsHovering(false)}
       className="flex justify-between titlebar"
     >
-      <NoteStartModal
-        isVisible={isModalVisible}
-        headlineInput={headlineInput}
-        onHeadlineChange={(value) => setHeadlineInput(value)}
-        onSubmit={handleModalSubmit}
-        onClose={() => setIsModalVisible(false)}
-      />
-      {isDeleteModalOpen && (
-        <DeleteNoteModal
-          isOpen={isDeleteModalOpen}
-          onClose={() => setDeleteModalOpen(false)}
-          onDelete={handleDeleteNote}
-        />
-      )}
       <div className="flex justify-between w-full titlebar">
-        <div className="w-[70px]"></div>
-        <div className="flex-1 text-center text-bright-green pt-2">
-          <span style={{ opacity: isHovering ? '1' : '0', transition: 'opacity 0.3s ease-in-out' }}>
+        <div className="w-[90px]"></div> 
+        <div className="flex-1 text-center text-white opacity-50 font-bold pt-1">
+          <span className={`transition-opacity duration-300 ease-in-out ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
             Some Title
           </span>
         </div>
-        <div className="flex flex-row items-center border border-white">
-          <button onClick={handleCreateNote} className="mr-2 bg-transparent non-draggable">
-            <div className="py-2 text-bright-green" style={{ fontSize: '16px', opacity: isHovering ? '1' : '0', transition: 'opacity 0.3s ease-in-out' }}>
-              <PiNotePencilLight />
-            </div>
-          </button>
-          <button onClick={() => setDeleteModalOpen(true)} className="mr-2 bg-transparent non-draggable">
-            <div className="py-2 text-bright-green" style={{ fontSize: '16px', opacity: isHovering ? '1' : '0', transition: 'opacity 0.3s ease-in-out' }}>
-              <AiOutlineDelete />
-            </div>
-          </button>
-          <button
-            onClick={handleFinishDaybook}
-            className="bg-transparent text-bright-green mr-2"
-            title="Mark daybook as finished"
+        <div className="flex flex-row items-center">
+          <div 
+            className="border-border flex items-center"
+            onMouseEnter={() => setIsControlsHovering(true)}
+            onMouseLeave={() => setIsControlsHovering(false)}
           >
-            <div className="flex items-center" style={{ fontSize: '16px', opacity: isHovering ? '1' : '0', transition: 'opacity 0.3s ease-in-out' }}>
-              <PiCalendarCheckThin />
-            </div>
-          </button>
+            <button className="mr-2 bg-transparent non-draggable">
+              <div className={`py-2 text-bright-green/85 text-base transition-opacity duration-300 ease-in-out ${isControlsHovering ? 'opacity-100' : 'opacity-0'}`}>
+                <CiPlay1 />
+              </div>
+            </button>
+            <button className="mr-2 bg-transparent non-draggable">
+              <div className={`py-2 text-bright-green/85 text-base transition-opacity duration-300 ease-in-out ${isControlsHovering ? 'opacity-100' : 'opacity-0'}`}>
+                <CiStop1 />
+              </div>
+            </button>
+            <button className="mr-1 bg-transparent non-draggable">
+              <div className={`py-2 text-bright-green/85 text-base transition-opacity duration-300 ease-in-out ${isControlsHovering ? 'opacity-100' : 'opacity-0'}`}>
+                <CiUndo />
+              </div>
+            </button>
+          </div>
+          <div className={`h-6 w-px mr-1 bg-bright-green transition-opacity duration-300 ease-in-out ${isControlsHovering ? 'opacity-50' : 'opacity-0'}`}></div>
+          <div className="flex flex-row items-center">
+            <button onClick={handleCreateNote} className="mr-2 bg-transparent non-draggable">
+              <div className={`py-2 text-bright-green/85 text-base transition-opacity duration-300 ease-in-out ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
+                <GiPlasticDuck />
+              </div>
+            </button>
+            <button onClick={() => setDeleteModalOpen(true)} className="mr-2 bg-transparent non-draggable">
+              <div className={`py-2 text-bright-green/85 text-base transition-opacity duration-300 ease-in-out ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
+                <CiViewList />
+              </div>
+            </button>
+            <button
+              onClick={handleFinishDaybook}
+              className="bg-transparent text-bright-green/85"
+              title="Mark daybook as finished"
+            >
+              <div className={`flex items-center text-base transition-opacity duration-300 ease-in-out ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
+                <CiSquarePlus />
+              </div>
+            </button>
+          </div>
         </div>
       </div>
-      <DaybookSummaryModal
-        isOpen={isSummaryModalOpen}
-        onClose={() => setIsSummaryModalOpen(false)}
-        onSave={handleSaveSummary}
-      />
     </div>
   )
 }
