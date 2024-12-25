@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode } from 'react'
 import useNotes from '../../hooks/useNotes'
-import Note from '../../types/Note'
+import Note from '../../types/NoteNew'
 
 interface NotesContextType {
   createNote: (pad: string, headline?: string) => void

@@ -1,42 +1,43 @@
 import { useRef, useEffect, useState } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { useNotesContext } from './../context/NotesContext'
-import { useSessionGoals } from './../context/SessionGoalsContext'
-import { useTimer } from './../context/TimeContext' // Add this import
+// import { useSessionGoals } from './../context/SessionGoalsContext'
+// import { useTimer } from './../context/TimeContext' // Add this import
 import Highlight from '@tiptap/extension-highlight'
 import Typography from '@tiptap/extension-typography'
 import StarterKit from '@tiptap/starter-kit'
 import TaskList from '@tiptap/extension-task-list'
 import TaskItem from '@tiptap/extension-task-item'
 import Strike from '@tiptap/extension-strike'
-import confetti from 'canvas-confetti'
+// import confetti from 'canvas-confetti'
 import Tools from './EditorTools'
 import HighlightMenu from './HighlightMenu'
 import BulletList from '@tiptap/extension-bullet-list'
 import ListItem from '@tiptap/extension-list-item'
-import CompletedSessionGoals from './CompletedSessionGoals'
-import dingSound from '../../assets/ding.mp3'
+// import CompletedSessionGoals from './CompletedSessionGoals'
+// import dingSound from '../../assets/ding.mp3'
+import { supabase } from '../../lib/supabaseClient' // Add this import
 
 interface EditorProps {
   pad: string
 }
 
 export default function Editor({ pad }: EditorProps): React.ReactElement {
-  const {
-    displayedNoteDaybook,
-    displayedNoteNotes,
-    setDisplayedNoteDaybook,
-    setDisplayedNoteNotes
-  } = useNotesContext()
+  const { displayedNoteDaybook, setDisplayedNoteDaybook } = useNotesContext()
 
-  const displayedNote = pad === 'daybook' ? displayedNoteDaybook : displayedNoteNotes
-  const setDisplayedNote = pad === 'daybook' ? setDisplayedNoteDaybook : setDisplayedNoteNotes
-
-  const [previousContent, setPreviousContent] = useState('')
+  // const [previousContent, setPreviousContent] = useState('')
 
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const { currentSession, endCurrentSession } = useSessionGoals()
-  const { isBreak } = useTimer()
+  // const { currentSession, endCurrentSession } = useSessionGoals()
+  // const { isBreak } = useTimer()
+
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    if (displayedNoteDaybook) {
+      setIsLoading(false)
+    }
+  }, [displayedNoteDaybook])
 
   useEffect(() => {
     return (): void => {
@@ -69,11 +70,40 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
   //   }
   // })
 
+  // Add autosave functionality
+  useEffect(() => {
+    const autoSave = async (): Promise<void> => {
+      if (!displayedNoteDaybook?.id || !displayedNoteDaybook.content) return
+
+      try {
+        const { error } = await supabase
+          .from('notes')
+          .update({
+            content: displayedNoteDaybook.content,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', displayedNoteDaybook.id)
+
+        if (error) throw error
+      } catch (error) {
+        console.error('Error auto-saving note:', error)
+      }
+    }
+
+    // Set up auto-save interval
+    const autoSaveInterval = setInterval(autoSave, 1000) // 5 seconds
+
+    // Cleanup interval on unmount
+    return (): void => {
+      clearInterval(autoSaveInterval)
+    }
+  }, [displayedNoteDaybook])
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        bulletList: false, // Disable default bulletList to use custom configuration
-        listItem: false // Disable default listItem to use custom configuration
+        bulletList: false,
+        listItem: false
       }),
       BulletList,
       ListItem,
@@ -85,7 +115,7 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
       }),
       TaskList
     ],
-    content: ``,
+    content: displayedNoteDaybook?.content || '',
     editorProps: {
       attributes: {
         class: 'prose max-w-none h-1/2 w-full tiptap task-list-inline'
@@ -93,41 +123,53 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
     },
     onUpdate: ({ editor }) => {
       const newContent = editor.getHTML()
-      if (newContent !== undefined && displayedNote) {
-        const newNote = { ...displayedNote, content: newContent }
-        setDisplayedNote(newNote)
-
-        // Check if a task was just completed
-        const prevCheckedCount = (previousContent.match(/data-checked="true"/g) || []).length
-        const newCheckedCount = (newContent.match(/data-checked="true"/g) || []).length
-
-        if (newCheckedCount > prevCheckedCount) {
-          triggerConfetti()
+      if (newContent !== undefined && displayedNoteDaybook) {
+        // Debounce the save operation
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current)
         }
 
-        setPreviousContent(newContent)
+        const newNote = { ...displayedNoteDaybook, content: newContent }
+        setDisplayedNoteDaybook(newNote)
+
+        // Check for completed tasks
+        // const prevCheckedCount = (previousContent.match(/data-checked="true"/g) || []).length
+        // const newCheckedCount = (newContent.match(/data-checked="true"/g) || []).length
+
+        // if (newCheckedCount > prevCheckedCount) {
+        //   triggerConfetti()
+        // }
+
+        // setPreviousContent(newContent)
       }
     }
   })
 
+  // Add this effect to update editor content when displayedNoteDaybook changes
   useEffect(() => {
-    if (isBreak && currentSession) {
-      endCurrentSession()
+    if (editor && displayedNoteDaybook?.content) {
+      editor.commands.setContent(displayedNoteDaybook.content)
     }
-  }, [isBreak, currentSession, endCurrentSession])
+  }, [editor, displayedNoteDaybook])
 
-  const triggerConfetti = (): void => {
-    const audio = new Audio(dingSound)
-    audio.volume = 0.05
-    audio.play().catch((error) => console.error('Error playing sound:', error))
+  // useEffect(() => {
+  //   if (isBreak && currentSession) {
+  //     endCurrentSession()
+  //   }
+  // }, [isBreak, currentSession, endCurrentSession])
 
-    confetti({
-      particleCount: 50,
-      spread: 75,
-      origin: { y: 0.65 },
-      colors: ['#26a69a']
-    })
-  }
+  // const triggerConfetti = (): void => {
+  //   const audio = new Audio(dingSound)
+  //   audio.volume = 0.05
+  //   audio.play().catch((error) => console.error('Error playing sound:', error))
+
+  //   confetti({
+  //     particleCount: 50,
+  //     spread: 75,
+  //     origin: { y: 0.65 },
+  //     colors: ['#26a69a']
+  //   })
+  // }
 
   // useEffect(() => {
   //   if (displayedNote && headlineEditor && editor) {
@@ -151,12 +193,17 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
       <div className="relative">
         <Tools pad={pad} />
       </div>
-      {/* <div className="mb-4">
-        {pad === 'daybook' && displayedNote && <CompletedSessionGoals noteId={displayedNote.id} />}
-      </div> */}
       <div className="h-full w-full" style={{ minHeight: '75%', height: 'auto' }}>
-        {editor && pad === 'daybook' && <HighlightMenu editor={editor} />}
-        <EditorContent editor={editor} />
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <p>Loading...</p>
+          </div>
+        ) : (
+          <>
+            {editor && pad === 'daybook' && <HighlightMenu editor={editor} />}
+            <EditorContent editor={editor} />
+          </>
+        )}
       </div>
     </div>
   )

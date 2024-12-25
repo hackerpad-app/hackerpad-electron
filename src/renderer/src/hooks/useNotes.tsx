@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Note from './../types/Note'
+import { supabase } from '../lib/supabaseClient'
 
 interface UseNotesReturn {
   createNote: (pad: string, headline?: string) => void
@@ -44,8 +45,7 @@ export default function useNotes(pad: string): UseNotesReturn {
   const [isCurrentDaybookFinished, setIsCurrentDaybookFinished] = useState(false)
 
   useEffect(() => {
-    readNotes('daybook')
-    readNotes('notes')
+    readNotes()
   }, [])
 
   const setDefaultNote = (pad: string): Note => ({
@@ -125,10 +125,21 @@ export default function useNotes(pad: string): UseNotesReturn {
     readNotes(pad)
   }
 
-  const readNotes = (pad: string): void => {
-    const storedNotes = localStorage.getItem(`notes_${pad}`)
-    const NotesArray = storedNotes ? JSON.parse(storedNotes) : []
-    handleNotesArray(pad, NotesArray)
+  const readNotes = async (): Promise<void> => {
+    try {
+      const { data: notes, error } = await supabase
+        .from('notes')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      // Set displayedNote to the first note in the array
+      if (notes.length > 0) {
+        setDisplayedNoteDaybook(notes[0])
+      }
+    } catch (error) {
+      console.error('Error reading notes:', error)
+    }
   }
 
   const updateNote = (
@@ -223,12 +234,10 @@ export default function useNotes(pad: string): UseNotesReturn {
     setSidebarSearchQuery,
     setSidebarSearchResults,
     sidebarSearchResults,
-    searchSidebarNotes,
     editorSearchQuery,
     setEditorSearchQuery,
     editorSearchResults,
     searchEditorNotes,
-    togglePinNote,
     isCurrentDaybookFinished,
     setIsCurrentDaybookFinished,
     setAllNotesDaybook,
@@ -236,3 +245,4 @@ export default function useNotes(pad: string): UseNotesReturn {
     duplicateNote
   }
 }
+  

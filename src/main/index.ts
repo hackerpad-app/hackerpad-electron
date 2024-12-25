@@ -205,14 +205,14 @@ function createWindow(): void {
   // Get the primary display's width
   const primaryDisplay = screen.getPrimaryDisplay()
   const screenWidth = primaryDisplay.workAreaSize.width
-  const windowWidth = screenWidth / 4
+  const windowWidth = screenWidth / 2
 
   mainWindow = new BrowserWindow({
     width: windowWidth,
     minWidth: windowWidth,
     frame: false,
     titleBarStyle: 'hidden',
-    maxWidth: 450,
+    maxWidth: 900,
     height: 670,
     minHeight: 450,
     show: false,

@@ -5,7 +5,6 @@ import type Note from '../../types/NoteNew'
 
 import { GiPlasticDuck } from 'react-icons/gi'
 import { CiSquarePlus, CiViewList, CiPlay1, CiStop1, CiUndo } from 'react-icons/ci'
-import { createClient } from '@/utils/supabase/server';
 
 interface ToolsProps {
   pad: string
@@ -16,8 +15,7 @@ const Tools = ({ pad }: ToolsProps): React.ReactNode => {
   const [isHovering, setIsHovering] = useState(false)
   const [isControlsHovering, setIsControlsHovering] = useState(false)
 
-  const { setDisplayedNoteDaybook, setDisplayedNoteNotes } = useNotesContext()
-  const setDisplayedNote = pad === 'daybook' ? setDisplayedNoteDaybook : setDisplayedNoteNotes
+  const { setDisplayedNoteDaybook, setDisplayedNoteNotes, displayedNoteDaybook } = useNotesContext()
 
   const handleDuck = (): void => {
     // TODO: Implement duck 
@@ -42,8 +40,9 @@ const Tools = ({ pad }: ToolsProps): React.ReactNode => {
       if (error) throw error
 
       // Update the displayed note with the newly created one
-      setDisplayedNote(data)
+      setDisplayedNoteDaybook(data)
       console.log('Note created:', data)
+      console.log('setDisplayedNote:', displayedNoteDaybook.title)
     } catch (error) {
       console.error('Error creating note:', error)
     }
