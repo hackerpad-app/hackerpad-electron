@@ -90,12 +90,15 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
       }
     }
 
-    // Set up auto-save interval
-    const autoSaveInterval = setInterval(autoSave, 1000) // 5 seconds
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+    saveTimeoutRef.current = setTimeout(autoSave, 1000)
 
-    // Cleanup interval on unmount
     return (): void => {
-      clearInterval(autoSaveInterval)
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
     }
   }, [displayedNoteDaybook])
 
@@ -121,34 +124,48 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
         class: 'prose max-w-none h-1/2 w-full tiptap task-list-inline'
       }
     },
+    autofocus: 'end',
+    enableCoreExtensions: true,
+    onFocus: ({ editor }) => {
+      const pos = editor.state.selection.$anchor.pos
+      editor.commands.focus(pos)
+    },
     onUpdate: ({ editor }) => {
       const newContent = editor.getHTML()
       if (newContent !== undefined && displayedNoteDaybook) {
-        // Debounce the save operation
-        if (saveTimeoutRef.current) {
-          clearTimeout(saveTimeoutRef.current)
-        }
-
         const newNote = { ...displayedNoteDaybook, content: newContent }
         setDisplayedNoteDaybook(newNote)
-
-        // Check for completed tasks
-        // const prevCheckedCount = (previousContent.match(/data-checked="true"/g) || []).length
-        // const newCheckedCount = (newContent.match(/data-checked="true"/g) || []).length
-
-        // if (newCheckedCount > prevCheckedCount) {
-        //   triggerConfetti()
-        // }
-
-        // setPreviousContent(newContent)
       }
     }
   })
 
-  // Add this effect to update editor content when displayedNoteDaybook changes
+  useEffect(() => {
+    if (editor) {
+      editor.setOptions({
+        editable: true
+      })
+      // Ensure proper focus handling
+      const editorElement = editor.view.dom
+      editorElement.addEventListener('blur', () => {
+        const selection = window.getSelection()
+        if (selection) {
+          const range = selection.getRangeAt(0)
+          const pos = editor.view.posAtDOM(range.startContainer, range.startOffset)
+          editor.commands.setTextSelection(pos)
+        }
+      })
+    }
+  }, [editor])
+
   useEffect(() => {
     if (editor && displayedNoteDaybook?.content) {
-      editor.commands.setContent(displayedNoteDaybook.content)
+      const currentPos = editor.state.selection.$anchor.pos
+      if (editor.getHTML() !== displayedNoteDaybook.content) {
+        editor.commands.setContent(displayedNoteDaybook.content, false)
+        setTimeout(() => {
+          editor.commands.setTextSelection(Math.min(currentPos, editor.state.doc.content.size))
+        }, 0)
+      }
     }
   }, [editor, displayedNoteDaybook])
 
