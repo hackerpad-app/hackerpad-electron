@@ -6,19 +6,15 @@ import type Note from '../../types/NoteNew'
 import { GiPlasticDuck } from 'react-icons/gi'
 import { CiSquarePlus, CiViewList, CiPlay1, CiStop1, CiUndo } from 'react-icons/ci'
 
-interface ToolsProps {
-  pad: string
-}
-
-const Tools = ({ pad }: ToolsProps): React.ReactNode => {
+const Tools = (): React.ReactNode => {
 
   const [isHovering, setIsHovering] = useState(false)
   const [isControlsHovering, setIsControlsHovering] = useState(false)
 
-  const { setDisplayedNoteDaybook, setDisplayedNoteNotes, displayedNoteDaybook } = useNotesContext()
+  const { setDisplayedNoteDaybook } = useNotesContext()
 
   const handleDuck = (): void => {
-    // TODO: Implement duck 
+    // TODO: Implement duck
   }
 
   const handleAddNote = async (): Promise<void> => {
@@ -39,10 +35,8 @@ const Tools = ({ pad }: ToolsProps): React.ReactNode => {
 
       if (error) throw error
 
-      // Update the displayed note with the newly created one
       setDisplayedNoteDaybook(data)
       console.log('Note created:', data)
-      console.log('setDisplayedNote:', displayedNoteDaybook.title)
     } catch (error) {
       console.error('Error creating note:', error)
     }

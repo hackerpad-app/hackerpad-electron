@@ -1,4 +1,3 @@
-import Sidebar from './common/Sidebar'
 import Editor from './common/Editor'
 
 interface DaybookProps {
@@ -13,7 +12,7 @@ export default function Daybook({ pad, setPad }: DaybookProps) {
         <Sidebar pad={pad} setPad={setPad} />
       </div> */}
       <div className="flex w-full overflow-y-auto custom-scrollbar bg-dark-green h-full">
-        <Editor pad={pad} />
+        <Editor />
       </div>
     </div>
   )
