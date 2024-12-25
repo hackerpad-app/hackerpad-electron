@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { useNotesContext } from '../context/NotesContext'
 import type Note from '../../types/NoteNew'
+import NotesListModal from './modals/NotesListModal'
 
 import { GiPlasticDuck } from 'react-icons/gi'
 import { CiSquarePlus, CiViewList, CiPlay1, CiStop1, CiUndo } from 'react-icons/ci'
@@ -9,6 +10,9 @@ import { CiSquarePlus, CiViewList, CiPlay1, CiStop1, CiUndo } from 'react-icons/
 const Tools = (): React.ReactNode => {
   const [isHovering, setIsHovering] = useState(false)
   const [isControlsHovering, setIsControlsHovering] = useState(false)
+  const [isListModalOpen, setIsListModalOpen] = useState(false)
+  const [notesList, setNotesList] = useState<Note[]>([])
+  const [notes, setNotes] = useState<Note[]>([])
 
   const { displayedNoteDaybook, setDisplayedNoteDaybook } = useNotesContext()
 
@@ -41,8 +45,24 @@ const Tools = (): React.ReactNode => {
     }
   }
 
-  const handleOpenListView = (): void => {
-    // TODO: Implement open list view
+  const handleOpenListView = async (): Promise<void> => {
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .select('*')
+        .order('updated_at', { ascending: false })
+
+      if (error) throw error
+
+      setNotesList(data)
+      setIsListModalOpen(true)
+    } catch (error) {
+      console.error('Error fetching notes:', error)
+    }
+  }
+  // Add this before the return statement
+  const handleNoteSelect = (note: Note): void => {
+    setDisplayedNoteDaybook(note)
   }
 
   return (
@@ -51,6 +71,7 @@ const Tools = (): React.ReactNode => {
       onMouseLeave={() => setIsHovering(false)}
       className="flex justify-between titlebar"
     >
+      
       <div className="flex justify-between w-full titlebar">
         <div className="w-[90px]"></div> 
         <div className="flex-1 text-center text-white opacity-50 font-bold pt-1">
@@ -101,9 +122,17 @@ const Tools = (): React.ReactNode => {
                 <CiSquarePlus />
               </div>
             </button>
+            
           </div>
         </div>
       </div>
+      <NotesListModal
+        isOpen={isListModalOpen}
+        onClose={() => setIsListModalOpen(false)}
+        notes={notesList}
+        setNotes={setNotesList}
+        onNoteSelect={handleNoteSelect}
+      />
     </div>
   )
 }
