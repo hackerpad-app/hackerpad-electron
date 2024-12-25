@@ -17,6 +17,7 @@ export default function Editor(): React.ReactElement {
   const { displayedNoteDaybook, setDisplayedNoteDaybook } = useNotesContext()
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [title, setTitle] = useState('')
 
   // Wait until the displayedNote is loaded
   useEffect(() => {
@@ -36,12 +37,13 @@ export default function Editor(): React.ReactElement {
 
   useEffect(() => {
     const autoSave = async (): Promise<void> => {
-      if (!displayedNoteDaybook?.id || !displayedNoteDaybook.content) return
+      if (!displayedNoteDaybook?.id) return
       try {
         const { error } = await supabase
           .from('notes')
           .update({
             content: displayedNoteDaybook.content,
+            title: displayedNoteDaybook.title,
             updated_at: new Date().toISOString()
           })
           .eq('id', displayedNoteDaybook.id)
@@ -64,11 +66,21 @@ export default function Editor(): React.ReactElement {
     }
   }, [displayedNoteDaybook])
 
+  // Add this effect to handle title updates
+  useEffect(() => {
+    if (displayedNoteDaybook?.title) {
+      setTitle(displayedNoteDaybook.title)
+    }
+  }, [displayedNoteDaybook?.title])
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
         bulletList: false,
-        listItem: false
+        listItem: false,
+        heading: {
+          levels: [2, 3, 4, 5, 6]
+        }
       }),
       BulletList,
       ListItem,
@@ -94,9 +106,21 @@ export default function Editor(): React.ReactElement {
     },
     onUpdate: ({ editor }) => {
       const newContent = editor.getHTML()
+      let firstNonEmptyLine = ''
+      editor.state.doc.forEach((node) => {
+        if (!firstNonEmptyLine && node.textContent?.trim()) {
+          firstNonEmptyLine = node.textContent.trim()
+        }
+      })
+      const titleToUse = firstNonEmptyLine || ''
       if (newContent !== undefined && displayedNoteDaybook) {
-        const newNote = { ...displayedNoteDaybook, content: newContent }
+        const newNote = { 
+          ...displayedNoteDaybook, 
+          content: newContent,
+          title: titleToUse
+        }
         setDisplayedNoteDaybook(newNote)
+        setTitle(titleToUse)
       }
     }
   })

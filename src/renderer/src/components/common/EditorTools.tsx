@@ -7,11 +7,10 @@ import { GiPlasticDuck } from 'react-icons/gi'
 import { CiSquarePlus, CiViewList, CiPlay1, CiStop1, CiUndo } from 'react-icons/ci'
 
 const Tools = (): React.ReactNode => {
-
   const [isHovering, setIsHovering] = useState(false)
   const [isControlsHovering, setIsControlsHovering] = useState(false)
 
-  const { setDisplayedNoteDaybook } = useNotesContext()
+  const { displayedNoteDaybook, setDisplayedNoteDaybook } = useNotesContext()
 
   const handleDuck = (): void => {
     // TODO: Implement duck
@@ -56,7 +55,7 @@ const Tools = (): React.ReactNode => {
         <div className="w-[90px]"></div> 
         <div className="flex-1 text-center text-white opacity-50 font-bold pt-1">
           <span className={`transition-opacity duration-300 ease-in-out ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
-            Some Title
+            {displayedNoteDaybook?.title || ''}
           </span>
         </div>
         <div className="flex flex-row items-center">
