@@ -61,18 +61,18 @@ const Tools = (ToolsProps): React.ReactNode => {
           </div>
           <div className={`h-6 w-px mr-1 bg-bright-green transition-opacity duration-300 ease-in-out ${isControlsHovering ? 'opacity-50' : 'opacity-0'}`}></div>
           <div className="flex flex-row items-center">
-            <button onClick={handleCreateNote} className="mr-2 bg-transparent non-draggable">
+            <button onClick={handleDuck} className="mr-2 bg-transparent non-draggable">
               <div className={`py-2 text-bright-green/85 text-base transition-opacity duration-300 ease-in-out ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
                 <GiPlasticDuck />
               </div>
             </button>
-            <button onClick={() => setDeleteModalOpen(true)} className="mr-2 bg-transparent non-draggable">
+            <button onClick={handleOpenListView} className="mr-2 bg-transparent non-draggable">
               <div className={`py-2 text-bright-green/85 text-base transition-opacity duration-300 ease-in-out ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
                 <CiViewList />
               </div>
             </button>
             <button
-              onClick={handleFinishDaybook}
+              onClick={handleAddNote}
               className="bg-transparent text-bright-green/85"
               title="Mark daybook as finished"
             >
