@@ -46,28 +46,28 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
     }
   }, [])
 
-  const headlineEditor = useEditor({
-    extensions: [StarterKit, Highlight.configure({ multicolor: true }), Typography],
-    content: '',
-    editorProps: {
-      attributes: {
-        class: 'prose max-w-none h-full w-full'
-      }
-    },
-    onUpdate: () => {
-      const newHeadline = headlineEditor?.getHTML()
-      if (newHeadline !== undefined && displayedNote) {
-        let cleanedHeadline = newHeadline.replace(/<[^>]*>/g, '')
-        if (cleanedHeadline.length > 45) {
-          cleanedHeadline = cleanedHeadline.substring(0, 25)
-          headlineEditor?.commands.setContent(`<h1>${cleanedHeadline}</h1>`)
-        }
+  // const headlineEditor = useEditor({
+  //   extensions: [StarterKit, Highlight.configure({ multicolor: true }), Typography],
+  //   content: '',
+  //   editorProps: {
+  //     attributes: {
+  //       class: 'prose max-w-none h-full w-full'
+  //     }
+  //   },
+  //   onUpdate: () => {
+  //     const newHeadline = headlineEditor?.getHTML()
+  //     if (newHeadline !== undefined && displayedNote) {
+  //       let cleanedHeadline = newHeadline.replace(/<[^>]*>/g, '')
+  //       if (cleanedHeadline.length > 45) {
+  //         cleanedHeadline = cleanedHeadline.substring(0, 25)
+  //         headlineEditor?.commands.setContent(`<h1>${cleanedHeadline}</h1>`)
+  //       }
 
-        const newNote = { ...displayedNote, headline: cleanedHeadline }
-        setDisplayedNote(newNote)
-      }
-    }
-  })
+  //       const newNote = { ...displayedNote, headline: cleanedHeadline }
+  //       setDisplayedNote(newNote)
+  //     }
+  //   }
+  // })
 
   const editor = useEditor({
     extensions: [
@@ -129,37 +129,32 @@ export default function Editor({ pad }: EditorProps): React.ReactElement {
     })
   }
 
-  useEffect(() => {
-    if (displayedNote && headlineEditor && editor) {
-      const wrappedHeadline = `<h1>${displayedNote.headline}</h1>`
-      if (headlineEditor.getHTML() !== wrappedHeadline) {
-        headlineEditor.commands.setContent(wrappedHeadline, false, {
-          preserveWhitespace: true
-        })
-      }
+  // useEffect(() => {
+  //   if (displayedNote && headlineEditor && editor) {
+  //     const wrappedHeadline = `<h1>${displayedNote.headline}</h1>`
+  //     if (headlineEditor.getHTML() !== wrappedHeadline) {
+  //       headlineEditor.commands.setContent(wrappedHeadline, false, {
+  //         preserveWhitespace: true
+  //       })
+  //     }
 
-      if (editor.getHTML() !== displayedNote.content) {
-        editor.commands.setContent(displayedNote.content, false, {
-          preserveWhitespace: true
-        })
-      }
-    }
-  }, [headlineEditor, editor, displayedNote])
+  //     if (editor.getHTML() !== displayedNote.content) {
+  //       editor.commands.setContent(displayedNote.content, false, {
+  //         preserveWhitespace: true
+  //       })
+  //     }
+  //   }
+  // }, [headlineEditor, editor, displayedNote])
 
   return (
     <div className="bg-dark-green relative h-screen w-full pr-5">
       <div className="relative">
         <Tools pad={pad} />
       </div>
-      <div className="flex pb-3 items-center justify-between border-b border-green-900">
-        <div className="-nowrap relative">
-          <EditorContent editor={headlineEditor} />
-        </div>
-      </div>
-      <div className="mb-4">
+      {/* <div className="mb-4">
         {pad === 'daybook' && displayedNote && <CompletedSessionGoals noteId={displayedNote.id} />}
-      </div>
-      <div className="h-3/4 w-full" style={{ minHeight: '75%', height: 'auto' }}>
+      </div> */}
+      <div className="h-full w-full" style={{ minHeight: '75%', height: 'auto' }}>
         {editor && pad === 'daybook' && <HighlightMenu editor={editor} />}
         <EditorContent editor={editor} />
       </div>
