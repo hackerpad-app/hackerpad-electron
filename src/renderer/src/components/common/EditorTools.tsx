@@ -1,23 +1,52 @@
 import React, { useState } from 'react'
+import { supabase } from '../../lib/supabaseClient'
+import { useNotesContext } from '../context/NotesContext'
+import type Note from '../../types/NoteNew'
 
 import { GiPlasticDuck } from 'react-icons/gi'
 import { CiSquarePlus, CiViewList, CiPlay1, CiStop1, CiUndo } from 'react-icons/ci'
+import { createClient } from '@/utils/supabase/server';
 
 interface ToolsProps {
-  // TODO: Implement props
+  pad: string
 }
 
-const Tools = (ToolsProps): React.ReactNode => {
+const Tools = ({ pad }: ToolsProps): React.ReactNode => {
 
   const [isHovering, setIsHovering] = useState(false)
   const [isControlsHovering, setIsControlsHovering] = useState(false)
 
+  const { setDisplayedNoteDaybook, setDisplayedNoteNotes } = useNotesContext()
+  const setDisplayedNote = pad === 'daybook' ? setDisplayedNoteDaybook : setDisplayedNoteNotes
+
   const handleDuck = (): void => {
-    // TODO: Implement duck
+    // TODO: Implement duck 
   }
 
-  const handleAddNote = (): void => {
-    // TODO: Implement add note
+  const handleAddNote = async (): Promise<void> => {
+    const newNote: Partial<Note> = {
+      title: 'New Note',
+      content: '<p>Start writing...</p>',
+      is_pinned: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .insert(newNote)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      // Update the displayed note with the newly created one
+      setDisplayedNote(data)
+      console.log('Note created:', data)
+    } catch (error) {
+      console.error('Error creating note:', error)
+    }
   }
 
   const handleOpenListView = (): void => {

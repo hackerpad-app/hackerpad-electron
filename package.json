@@ -27,6 +27,8 @@
     "@emotion/styled": "^11.11.5",
     "@mui/icons-material": "^6.0.2",
     "@mui/material": "^6.0.2",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/supabase-js": "^2.47.10",
     "@tauri-apps/api": "^1.6.0",
     "@tiptap/core": "^2.4.0",
     "@tiptap/extension-bubble-menu": "^2.5.1",
