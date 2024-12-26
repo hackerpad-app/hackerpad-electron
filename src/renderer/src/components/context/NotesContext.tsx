@@ -29,11 +29,8 @@ interface NotesContextType {
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined)
 
-export const NotesProvider: React.FC<{ children: ReactNode; pad: string }> = ({
-  children,
-  pad
-}) => {
-  const notesData = useNotes(pad) as NotesContextType
+export const NotesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const notesData = useNotes() as NotesContextType
 
   return <NotesContext.Provider value={notesData}>{children}</NotesContext.Provider>
 }

@@ -79,24 +79,24 @@ const Tools = (): React.ReactNode => {
 
   const handleStartTimer = (): void => {
     if (!sessionClockTicking) {
-      startTimer();
-      if (!isBreak) {
-        setShowGoalsWindow(true);
-      }
+      startTimer()
+      // if (!isBreak) {
+      //   setShowGoalsWindow(true)
+      // }
     }
   }
 
   const handleStopTimer = (): void => {
     if (sessionClockTicking) {
-      stopTimer();
-      setShowGoalsWindow(false);
+      stopTimer()
+      // setShowGoalsWindow(false)
     }
   }
 
   const handleResetTimer = (): void => {
     if (sessionInProgress) {
-      resetTimer();
-      setShowGoalsWindow(false);
+      resetTimer()
+      // setShowGoalsWindow(false)
     }
   }
 

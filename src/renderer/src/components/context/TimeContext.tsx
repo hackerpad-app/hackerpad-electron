@@ -1,8 +1,11 @@
+/* eslint-disable */
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import * as React from 'react'
 import { WORK_SESSION_SECONDS, BREAK_SESSION_SECONDS } from '../../config/timerConfig'
 import magicSound from '../../assets/magic.wav'
 import upliftSound from '../../assets/uplift.wav'
+
+import { useSession } from './SessionContext'
 
 interface Time {
   minutes: number
@@ -38,13 +41,19 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [sessionClockTicking, setSessionClockTicking] = useState(false)
   const [sessionInProgress, setSessionInProgress] = useState(false)
   const [isBreak, setIsBreak] = useState(false)
-  const [sessionCompleted, setSessionCompleted] = useState(false) // Add this new state
+  const [sessionCompleted, setSessionCompleted] = useState(false)
   const intervalRef = useRef<number | null>(null)
+  const { createSession, updateSession } = useSession()
 
-  const startTimer = useCallback(() => {
-    setSessionClockTicking(true)
-    setSessionInProgress(true)
-  }, [])
+  const startTimer = useCallback(async () => {
+    try {
+      await createSession()
+      setSessionClockTicking(true)
+      setSessionInProgress(true)
+    } catch (error) {
+      console.error('Error creating session:', error)
+    }
+  }, [createSession])
 
   const stopTimer = useCallback(() => {
     setSessionClockTicking(false)
@@ -53,7 +62,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const resetTimer = useCallback(() => {
     setSessionClockTicking(false)
     setSessionInProgress(false)
-    setSessionCompleted(false) // Reset sessionCompleted when timer is reset
+    setSessionCompleted(false)
     const newSessionSeconds = isBreak ? BREAK_SESSION_SECONDS : WORK_SESSION_SECONDS
     setTime({
       minutes: Math.floor(newSessionSeconds / 60),
@@ -62,6 +71,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsBreak(false)
   }, [isBreak])
 
+
+  // Timer logic together with updating the session after it's finished
   useEffect(() => {
     if (sessionClockTicking) {
       intervalRef.current = window.setInterval(() => {
@@ -69,14 +80,20 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           if (prevTime.seconds === 0 && prevTime.minutes === 0) {
             const newIsBreak = !isBreak
             const newSessionSeconds = newIsBreak ? BREAK_SESSION_SECONDS : WORK_SESSION_SECONDS
-            setIsBreak(newIsBreak)
-            setSessionClockTicking(false)
-            if (!newIsBreak) {
-              setSessionCompleted(true)
-            }
+
             const audio = new Audio(isBreak ? upliftSound : magicSound)
             audio.volume = 0.05
             audio.play().catch((error) => console.error('Error playing sound:', error))
+
+            if (!isBreak) {
+              updateSession({
+                finished_at: new Date().toISOString()
+              }).catch(error => console.error('Error updating session:', error))
+              setSessionCompleted(true)
+            }
+
+            setIsBreak(newIsBreak)
+            setSessionClockTicking(false)
 
             return {
               minutes: Math.floor(newSessionSeconds / 60),
@@ -107,7 +124,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     sessionClockTicking,
     sessionInProgress,
     isBreak,
-    sessionCompleted, // Add this new property
+    sessionCompleted,
     startTimer,
     stopTimer,
     resetTimer
