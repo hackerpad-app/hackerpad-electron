@@ -78,9 +78,6 @@ const Tools = (): React.ReactNode => {
   }
 
   const handleStartTimer = (): void => {
-    console.log('Start Timer clicked');
-    console.log('sessionClockTicking:', sessionClockTicking);
-    
     if (!sessionClockTicking) {
       startTimer();
       if (!isBreak) {
@@ -90,9 +87,6 @@ const Tools = (): React.ReactNode => {
   }
 
   const handleStopTimer = (): void => {
-    console.log('Stop Timer clicked');
-    console.log('sessionClockTicking:', sessionClockTicking);
-    
     if (sessionClockTicking) {
       stopTimer();
       setShowGoalsWindow(false);
@@ -100,9 +94,6 @@ const Tools = (): React.ReactNode => {
   }
 
   const handleResetTimer = (): void => {
-    console.log('Reset Timer clicked');
-    console.log('sessionInProgress:', sessionInProgress);
-    
     if (sessionInProgress) {
       resetTimer();
       setShowGoalsWindow(false);
@@ -113,9 +104,7 @@ const Tools = (): React.ReactNode => {
     <div
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
-      className="flex justify-between titlebar"
-    >
-      
+      className="flex justify-between titlebar">
       <div className="flex justify-between w-full titlebar">
         <div className="w-[90px]"></div> 
         <div className="flex-1 text-center text-white opacity-50 font-bold pt-1">
@@ -135,11 +124,8 @@ const Tools = (): React.ReactNode => {
                 if (!sessionClockTicking) handleStartTimer();
               }}
               className="mr-2 bg-transparent non-draggable"
-              disabled={sessionClockTicking}
-            >
-              <div className={`py-2 text-bright-green/85 text-base transition-opacity duration-300 ease-in-out ${
-                isControlsHovering ? 'opacity-100' : 'opacity-0'
-              } ${sessionClockTicking ? 'opacity-30' : ''}`}>
+              disabled={sessionClockTicking}>
+              <div className={`py-2 text-bright-green/85 text-base transition-opacity duration-300 ease-in-out ${isControlsHovering ? 'opacity-100' : 'opacity-0'} ${sessionClockTicking ? 'opacity-30' : ''}`}>
                 <CiPlay1 />
               </div>
             </button>
@@ -193,7 +179,6 @@ const Tools = (): React.ReactNode => {
                 <CiSquarePlus />
               </div>
             </button>
-            
           </div>
         </div>
       </div>
