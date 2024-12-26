@@ -1,6 +1,5 @@
 import * as React from 'react'
-import { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react'
-import { v4 as uuidv4 } from 'uuid'
+import { createContext, useState, useContext, ReactNode, useCallback } from 'react'
 
 export interface Session {
   id: string
@@ -26,15 +25,11 @@ export interface Distraction {
 interface SessionGoalsContextType {
   currentSession: Session | null
   completedSessions: Session[]
-  addGoal: (text: string) => void
   showGoalsWindow: boolean
   setShowGoalsWindow: React.Dispatch<React.SetStateAction<boolean>>
   showMovableGoalsWindow: boolean
   setShowMovableGoalsWindow: React.Dispatch<React.SetStateAction<boolean>>
   transitionToMovableWindow: () => void
-  startNewSession: (noteId: string) => void
-  endCurrentSession: () => void
-  setDaySummary: (summary: string) => void
   setCurrentSession: React.Dispatch<React.SetStateAction<Session | null>>
 }
 
@@ -46,103 +41,100 @@ export const SessionGoalsProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [showGoalsWindow, setShowGoalsWindow] = useState(false)
   const [showMovableGoalsWindow, setShowMovableGoalsWindow] = useState(false)
 
-  useEffect(() => {
-    const handleGoalsUpdate = (data: { goals: Goal[]; distractions: Distraction[] }): void => {
-      if (currentSession) {
-        setCurrentSession((prev) => ({
-          ...prev!,
-          goals: data.goals || prev!.goals,
-          distractions: data.distractions || prev!.distractions
-        }))
-      }
-    }
+  // useEffect(() => {
+  //   const handleGoalsUpdate = (data: { goals: Goal[]; distractions: Distraction[] }): void => {
+  //     if (currentSession) {
+  //       setCurrentSession((prev) => ({
+  //         ...prev!,
+  //         goals: data.goals || prev!.goals,
+  //         distractions: data.distractions || prev!.distractions
+  //       }))
+  //     }
+  //   }
 
-    window.electron.ipcRenderer.on('goals-state-update', handleGoalsUpdate)
+  //   window.electron.ipcRenderer.on('goals-state-update', handleGoalsUpdate) [------------ IMPORTANT]
 
-    return (): void => {
-      window.electron.ipcRenderer.removeListener('goals-state-update', handleGoalsUpdate)
-    }
-  }, [currentSession])
+  //   return (): void => {
+  //     window.electron.ipcRenderer.removeListener('goals-state-update', handleGoalsUpdate)
+  //   }
+  // }, [currentSession])
 
-  const addGoal = useCallback(
-    (text: string): void => {
-      if (currentSession) {
-        const newGoal = { id: uuidv4(), text, finished: false }
-        setCurrentSession((prevSession) => {
-          const updatedSession = {
-            ...prevSession!,
-            goals: [...prevSession!.goals, newGoal]
-          }
+  // const addGoal = useCallback(
+  //   (text: string): void => {
+  //     if (currentSession) {
+  //       const newGoal = { id: uuidv4(), text, finished: false }
+  //       setCurrentSession((prevSession) => {
+  //         const updatedSession = {
+  //           ...prevSession!,
+  //           goals: [...prevSession!.goals, newGoal]
+  //         }
 
-          window.electron.ipcRenderer.send('update-goals-state', {
-            type: 'add-goal',
-            goals: updatedSession.goals
-          })
+  //         window.electron.ipcRenderer.send('update-goals-state', {   [------------ IMPORTANT]
+  //           type: 'add-goal',
+  //           goals: updatedSession.goals
+  //         })
 
-          return updatedSession
-        })
-      }
-    },
-    [currentSession]
-  )
+  //         return updatedSession
+  //       })
+  //     }
+  //   },
+  //   [currentSession]
+  // )
 
   const transitionToMovableWindow = useCallback((): void => {
     setShowGoalsWindow(false)
+    setShowMovableGoalsWindow(true)
     window.electron.ipcRenderer.send('show-goals-window')
   }, [])
 
-  const startNewSession = useCallback((noteId: string) => {
-    const newSession: Session = {
-      id: uuidv4(),
-      noteId,
-      startTime: new Date().toISOString(),
-      endTime: null,
-      goals: [],
-      distractions: []
-    }
-    setCurrentSession(newSession)
+  // const startNewSession = useCallback((noteId: string) => {
+  //   const newSession: Session = {
+  //     id: uuidv4(),
+  //     noteId,
+  //     startTime: new Date().toISOString(),
+  //     endTime: null,
+  //     goals: [],
+  //     distractions: []
+  //   }
+  //   setCurrentSession(newSession)
 
-    window.electron.ipcRenderer.send('update-goals-state', {
-      type: 'init-session'
-    })
-  }, [])
+  //   window.electron.ipcRenderer.send('update-goals-state', {
+  //     type: 'init-session'
+  //   })
+  // }, [])
 
-  const endCurrentSession = useCallback((): void => {
-    if (currentSession) {
-      const endedSession = {
-        ...currentSession,
-        endTime: new Date().toISOString()
-      }
-      setCompletedSessions((prevSessions) => [...prevSessions, endedSession])
-      setCurrentSession(null)
-    }
-  }, [currentSession])
+  // const endCurrentSession = useCallback((): void => {
+  //   if (currentSession) {
+  //     const endedSession = {
+  //       ...currentSession,
+  //       endTime: new Date().toISOString()
+  //     }
+  //     setCompletedSessions((prevSessions) => [...prevSessions, endedSession])
+  //     setCurrentSession(null)
+  //   }
+  // }, [currentSession])
 
-  const setDaySummary = useCallback((summary: string): void => {
-    setCompletedSessions((prevSessions) => {
-      const lastSession = prevSessions[prevSessions.length - 1]
-      if (lastSession) {
-        const updatedSession = { ...lastSession, daySummary: summary }
-        return [...prevSessions.slice(0, -1), updatedSession]
-      }
-      return prevSessions
-    })
-  }, [])
+  // const setDaySummary = useCallback((summary: string): void => {
+  //   setCompletedSessions((prevSessions) => {
+  //     const lastSession = prevSessions[prevSessions.length - 1]
+  //     if (lastSession) {
+  //       const updatedSession = { ...lastSession, daySummary: summary }
+  //       return [...prevSessions.slice(0, -1), updatedSession]
+  //     }
+  //     return prevSessions
+  //   })
+  // }, [])
 
   return (
     <SessionGoalsContext.Provider
       value={{
         currentSession,
         completedSessions,
-        addGoal,
         showGoalsWindow,
         setShowGoalsWindow,
         showMovableGoalsWindow,
         setShowMovableGoalsWindow,
         transitionToMovableWindow,
-        startNewSession,
-        endCurrentSession,
-        setDaySummary,
         setCurrentSession
       }}
     >

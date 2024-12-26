@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { useState, useEffect, useCallback } from 'react'
-import { useTimer } from '../context/TimeContext'
 import { useSessionGoals } from '../context/SessionGoalsContext'
 import { SlArrowRight, SlArrowLeft } from 'react-icons/sl'
 import { GiDistraction } from 'react-icons/gi'
@@ -12,7 +11,6 @@ const LargeGoalsView: React.FC<{ onShrink: () => void; goalWidth: string }> = ({
   goalWidth
 }) => {
   const { currentSession } = useSessionGoals()
-  // Create a map to track seen IDs
   const seenIds = new Set<string>()
 
   // Filter out duplicates while maintaining order

@@ -9,6 +9,8 @@ interface SessionContextType {
   currentSessionId: string | null
   createSession: () => Promise<string>
   updateSession: (data: Partial<Session>) => Promise<void>
+  showStartSessionModal: boolean
+  setShowStartSessionModal: (show: boolean) => void
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined)
@@ -24,6 +26,7 @@ export const useSession = (): SessionContextType => {
 export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { displayedNoteDaybook } = useNotesContext()
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
+  const [showStartSessionModal, setShowStartSessionModal] = useState(false)
 
   // Create a new session and set the currentSessionId
   const createSession = useCallback(async () => {
@@ -54,7 +57,9 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const value = {
     currentSessionId,
     createSession,
-    updateSession
+    updateSession,
+    showStartSessionModal,
+    setShowStartSessionModal
   }
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>

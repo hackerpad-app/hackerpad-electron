@@ -4,7 +4,7 @@ import { PiCalendarThin, PiPencilCircleThin, PiPushPinThin, PiPushPinFill } from
 import { useNotesContext } from '../context/NotesContext'
 import Note from '../../types/Note'
 import SessionTimer from './SessionTimer'
-import SessionGoalsWindow from './SessionGoalsWindow'
+import StartSessionModal from './modals/StartSessionModal'
 import MovableGoalsWindow from './MovableGoalsWindow'
 import { useSessionGoals } from '../context/SessionGoalsContext'
 
