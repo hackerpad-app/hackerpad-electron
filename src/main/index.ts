@@ -68,7 +68,7 @@ function createTray(mainWindow: BrowserWindow): void {
   ])
 
   // Set initial title and context menu
-  tray.setTitle('Hi 00:00')
+  tray.setTitle('00:00')
   tray.setContextMenu(contextMenu)
 
   tray.on('click', () => {

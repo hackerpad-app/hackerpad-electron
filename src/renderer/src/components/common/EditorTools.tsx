@@ -3,6 +3,8 @@ import { supabase } from '../../lib/supabaseClient'
 import { useNotesContext } from '../context/NotesContext'
 import type Note from '../../types/NoteNew'
 import NotesListModal from './modals/NotesListModal'
+import { useTimer } from '../context/TimeContext'
+import { useSessionGoals } from '../context/SessionGoalsContext'
 
 import { GiPlasticDuck } from 'react-icons/gi'
 import { CiSquarePlus, CiViewList, CiPlay1, CiStop1, CiUndo } from 'react-icons/ci'
@@ -12,7 +14,17 @@ const Tools = (): React.ReactNode => {
   const [isControlsHovering, setIsControlsHovering] = useState(false)
   const [isListModalOpen, setIsListModalOpen] = useState(false)
   const [notesList, setNotesList] = useState<Note[]>([])
-  const [notes, setNotes] = useState<Note[]>([])
+
+  const { setShowGoalsWindow } = useSessionGoals()
+
+  const {
+    sessionClockTicking,
+    sessionInProgress,
+    startTimer,
+    stopTimer,
+    resetTimer,
+    isBreak
+  } = useTimer()
 
   const { displayedNoteDaybook, setDisplayedNoteDaybook } = useNotesContext()
 
@@ -65,6 +77,38 @@ const Tools = (): React.ReactNode => {
     setDisplayedNoteDaybook(note)
   }
 
+  const handleStartTimer = (): void => {
+    console.log('Start Timer clicked');
+    console.log('sessionClockTicking:', sessionClockTicking);
+    
+    if (!sessionClockTicking) {
+      startTimer();
+      if (!isBreak) {
+        setShowGoalsWindow(true);
+      }
+    }
+  }
+
+  const handleStopTimer = (): void => {
+    console.log('Stop Timer clicked');
+    console.log('sessionClockTicking:', sessionClockTicking);
+    
+    if (sessionClockTicking) {
+      stopTimer();
+      setShowGoalsWindow(false);
+    }
+  }
+
+  const handleResetTimer = (): void => {
+    console.log('Reset Timer clicked');
+    console.log('sessionInProgress:', sessionInProgress);
+    
+    if (sessionInProgress) {
+      resetTimer();
+      setShowGoalsWindow(false);
+    }
+  }
+
   return (
     <div
       onMouseEnter={() => setIsHovering(true)}
@@ -85,18 +129,45 @@ const Tools = (): React.ReactNode => {
             onMouseEnter={() => setIsControlsHovering(true)}
             onMouseLeave={() => setIsControlsHovering(false)}
           >
-            <button className="mr-2 bg-transparent non-draggable">
-              <div className={`py-2 text-bright-green/85 text-base transition-opacity duration-300 ease-in-out ${isControlsHovering ? 'opacity-100' : 'opacity-0'}`}>
+            <button 
+              onClick={() => {
+                console.log('Play button clicked');
+                if (!sessionClockTicking) handleStartTimer();
+              }}
+              className="mr-2 bg-transparent non-draggable"
+              disabled={sessionClockTicking}
+            >
+              <div className={`py-2 text-bright-green/85 text-base transition-opacity duration-300 ease-in-out ${
+                isControlsHovering ? 'opacity-100' : 'opacity-0'
+              } ${sessionClockTicking ? 'opacity-30' : ''}`}>
                 <CiPlay1 />
               </div>
             </button>
-            <button className="mr-2 bg-transparent non-draggable">
-              <div className={`py-2 text-bright-green/85 text-base transition-opacity duration-300 ease-in-out ${isControlsHovering ? 'opacity-100' : 'opacity-0'}`}>
+            <button 
+              onClick={() => {
+                console.log('Stop button clicked');
+                if (sessionClockTicking) handleStopTimer();
+              }}
+              className="mr-2 bg-transparent non-draggable"
+              disabled={!sessionClockTicking}
+            >
+              <div className={`py-2 text-bright-green/85 text-base transition-opacity duration-300 ease-in-out ${
+                isControlsHovering ? 'opacity-100' : 'opacity-0'
+              } ${!sessionClockTicking ? 'opacity-30' : ''}`}>
                 <CiStop1 />
               </div>
             </button>
-            <button className="mr-1 bg-transparent non-draggable">
-              <div className={`py-2 text-bright-green/85 text-base transition-opacity duration-300 ease-in-out ${isControlsHovering ? 'opacity-100' : 'opacity-0'}`}>
+            <button 
+              onClick={() => {
+                console.log('Reset button clicked');
+                if (sessionInProgress) handleResetTimer();
+              }}
+              className="mr-1 bg-transparent non-draggable"
+              disabled={!sessionInProgress}
+            >
+              <div className={`py-2 text-bright-green/85 text-base transition-opacity duration-300 ease-in-out ${
+                isControlsHovering ? 'opacity-100' : 'opacity-0'
+              } ${!sessionInProgress ? 'opacity-30' : ''}`}>
                 <CiUndo />
               </div>
             </button>

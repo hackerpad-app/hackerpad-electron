@@ -14,7 +14,7 @@ interface TimerContextType {
   sessionClockTicking: boolean
   sessionInProgress: boolean
   isBreak: boolean
-  sessionCompleted: boolean // Add this new property
+  sessionCompleted: boolean
   startTimer: () => void
   stopTimer: () => void
   resetTimer: () => void
@@ -101,21 +101,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     }
   }, [sessionClockTicking, isBreak])
-
-  useEffect(() => {
-    const formattedTime = `${time.minutes.toString().padStart(2, '0')}:${time.seconds
-      .toString()
-      .padStart(2, '0')}`
-    window.api.updateTrayTimer(formattedTime)
-
-    // Send timer update to main process
-    window.electron.ipcRenderer.send('timer-update', {
-      minutes: time.minutes,
-      seconds: time.seconds,
-      isBreak: isBreak,
-      sessionClockTicking: sessionClockTicking
-    })
-  }, [time.minutes, time.seconds, isBreak, sessionClockTicking])
 
   const value = {
     time,
