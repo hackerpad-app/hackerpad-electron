@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import { FaPlay } from 'react-icons/fa'
 import { useSession } from '../../context/SessionContext'
+import { useTimer } from '../../context/TimeContext'
 
 const StartSessionModal: React.FC = () => {
   const {  setShowStartSessionModal, currentSessionId } = useSession()
+  const { startTimer } = useTimer()
   const [newGoal, setNewGoal] = useState('')
   const [goals, setGoals] = useState<{ text: string }[]>([])
 
@@ -30,6 +32,9 @@ const StartSessionModal: React.FC = () => {
           })
         )
       )
+
+      // Start session 
+      startTimer()
 
       // Close modal and show movable window
       setShowStartSessionModal(false)

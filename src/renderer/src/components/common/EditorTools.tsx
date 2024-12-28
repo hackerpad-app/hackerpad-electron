@@ -22,7 +22,6 @@ const Tools = (): React.ReactNode => {
   const {
     sessionClockTicking,
     sessionInProgress,
-    startTimer,
     stopTimer,
     resetTimer,
   } = useTimer()
@@ -35,7 +34,6 @@ const Tools = (): React.ReactNode => {
 
   const handleStartTimer = (): void => {
     if (!sessionClockTicking) {
-      startTimer()
       setShowStartSessionModal(true)
     }
   }
